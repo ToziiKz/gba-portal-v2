@@ -18,7 +18,11 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ disabled?: string }>;
+  searchParams?: Promise<{
+    disabled?: string;
+    no_profile?: string;
+    role_invalid?: string;
+  }>;
 }) {
   const params = (await searchParams) ?? {};
 
@@ -39,6 +43,21 @@ export default async function LoginPage({
           <div className="mt-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-100">
             Votre compte coach est actuellement suspendu. Contactez un
             administrateur.
+          </div>
+        ) : null}
+
+        {params.no_profile === "1" ? (
+          <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+            Compte authentifié, mais aucun profil n&apos;est trouvé dans la table
+            <code className="mx-1">profiles</code>. Ajoute ton utilisateur dans
+            Supabase pour accéder au dashboard.
+          </div>
+        ) : null}
+
+        {params.role_invalid === "1" ? (
+          <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
+            Le rôle du profil est invalide. Rôles acceptés : admin,
+            resp_sportif, resp_pole, resp_equipements, coach.
           </div>
         ) : null}
 
