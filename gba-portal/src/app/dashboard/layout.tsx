@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { PermissionsProvider } from "@/components/PermissionsProvider";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
@@ -34,7 +34,6 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const admin = createAdminClient();
 
   const {
     data: { user },
@@ -44,7 +43,7 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const { data: profile } = await admin
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role, is_active, full_name, email, id")
     .eq("id", user.id)

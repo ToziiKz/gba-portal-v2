@@ -1,4 +1,4 @@
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import type { DashboardRole } from "@/lib/dashboardRole";
 
 export type DashboardScope = {
@@ -11,7 +11,6 @@ export type DashboardScope = {
 
 export async function getDashboardScope(): Promise<DashboardScope> {
   const supabase = await createClient();
-  const admin = createAdminClient();
 
   const {
     data: { user },
@@ -27,7 +26,7 @@ export async function getDashboardScope(): Promise<DashboardScope> {
     };
   }
 
-  const { data: profile } = await admin
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role, is_active, pole_scope")
     .eq("id", user.id)
@@ -67,7 +66,7 @@ export async function getDashboardScope(): Promise<DashboardScope> {
   if (rawRole === "resp_pole") {
     let poleTeams: { id: string; name: string; category: string }[] = [];
     if (poleScope) {
-      const { data } = await admin
+      const { data } = await supabase
         .from("teams")
         .select("id, name, category")
         .eq("pole", poleScope);
@@ -92,7 +91,7 @@ export async function getDashboardScope(): Promise<DashboardScope> {
   let assignedTeams: { id: string; name: string; category: string }[] = [];
 
   // Direct assignment
-  const { data: directTeams } = await admin
+  const { data: directTeams } = await supabase
     .from("teams")
     .select("id, name, category")
     .eq("coach_id", user.id);
@@ -111,7 +110,7 @@ export async function getDashboardScope(): Promise<DashboardScope> {
 
   // Pole assignment (optional for coach)
   if (poleScope) {
-    const { data: poleTeams } = await admin
+    const { data: poleTeams } = await supabase
       .from("teams")
       .select("id, name, category")
       .eq("pole", poleScope);
