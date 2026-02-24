@@ -1,0 +1,374 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  /* Local scope helper (dashboard passes the class on its root container). */
+  .theme-light {
+    color-scheme: light;
+    background-color: var(--ui-bg);
+    color: var(--ui-fg);
+  }
+
+  /* Tailwind utility overrides to make legacy "dark" dashboard classes render correctly on white.
+     (We keep the public site dark; only the dashboard root gets `.theme-light`.) */
+  .theme-light .text-white {
+    color: var(--ui-fg) !important;
+  }
+
+  .theme-light .text-white\/85,
+  .theme-light .text-white\/80,
+  .theme-light .text-white\/70 {
+    color: var(--ui-muted) !important;
+  }
+
+  .theme-light .text-white\/60,
+  .theme-light .text-white\/55,
+  .theme-light .text-white\/45,
+  .theme-light .text-white\/35 {
+    color: var(--ui-muted-2) !important;
+  }
+
+  .theme-light .bg-white\/5 {
+    background-color: var(--ui-surface) !important;
+  }
+
+  .theme-light .bg-white\/10 {
+    background-color: var(--ui-surface-2) !important;
+  }
+
+  .theme-light .border-white\/10,
+  .theme-light .border-white\/15,
+  .theme-light .border-white\/20,
+  .theme-light .border-white\/25,
+  .theme-light .border-white\/30 {
+    border-color: var(--ui-border) !important;
+  }
+
+  .theme-light .bg-black\/20,
+  .theme-light .bg-black\/30 {
+    background-color: var(--ui-surface-2) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  body {
+    background-color: #020202;
+    color: #ffffff;
+    min-height: 100vh;
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  section {
+    position: relative;
+    scroll-margin-top: 120px; /* account for fixed navbar */
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(0, 161, 255, 0.75);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-contrast: more) {
+    :focus-visible {
+      outline-color: rgba(255, 255, 255, 0.92);
+      outline-width: 3px;
+    }
+
+    body {
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+}
+
+@layer base {
+  ::selection {
+    background: rgba(0, 161, 255, 0.25);
+    color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+@layer utilities {
+  /* Perf: defer rendering below the fold when supported (progressive enhancement). */
+  @supports (content-visibility: auto) {
+    .cv-auto {
+      content-visibility: auto;
+      contain-intrinsic-size: 1200px;
+    }
+  }
+
+  @keyframes hero-ambient-drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.18;
+    }
+    50% {
+      transform: translate3d(0.9%, -0.6%, 0) scale(1.01);
+      opacity: 0.24;
+    }
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.18;
+    }
+  }
+
+  .hero-ambient {
+    will-change: transform, opacity;
+    animation: hero-ambient-drift 38s ease-in-out infinite;
+  }
+
+  .hero-vignette {
+    background: radial-gradient(
+      1200px 500px at 50% 70%,
+      transparent 20%,
+      rgba(0, 0, 0, 0.55) 70%,
+      rgba(0, 0, 0, 0.88) 100%
+    );
+  }
+
+  @keyframes scroll-dot {
+    0% {
+      transform: translate(-50%, 0);
+      opacity: 0.65;
+    }
+    60% {
+      transform: translate(-50%, 14px);
+      opacity: 0.25;
+    }
+    100% {
+      transform: translate(-50%, 0);
+      opacity: 0.65;
+    }
+  }
+
+  .animate-scroll-dot {
+    animation: scroll-dot 1.35s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .btn-premium {
+    position: relative;
+    overflow: hidden;
+    /* Avoid forcing GPU compositing here (can cause text to look slightly blurred on some displays). */
+    transform: none;
+    filter: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .btn-premium::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    opacity: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.18) 45%,
+      rgba(255, 255, 255, 0.32) 50%,
+      rgba(255, 255, 255, 0.18) 55%,
+      transparent 100%
+    );
+    transform: translateX(-30%);
+    transition:
+      opacity 220ms ease,
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+
+  .btn-premium:hover::before,
+  .btn-premium:focus-visible::before {
+    opacity: 1;
+    transform: translateX(30%);
+  }
+
+  .btn-ghost {
+    background: rgba(255, 255, 255, 0.06);
+    filter: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .btn-ghost:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px rgba(0, 161, 255, 0.9),
+      0 0 0 4px rgba(0, 0, 0, 0.95);
+  }
+
+  @keyframes cinematic-fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .cinematic-reveal {
+    will-change: transform, opacity;
+    filter: none;
+    animation: cinematic-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  /* Progressive enhancement: entrance animations trigger on scroll (not all at once on page load). */
+  @supports (animation-timeline: view()) {
+    .cinematic-reveal {
+      animation-timeline: view();
+      animation-range: entry 0% cover 32%;
+    }
+  }
+
+  .cinematic-reveal-delay-1 {
+    animation-delay: 90ms;
+  }
+
+  .cinematic-reveal-delay-2 {
+    animation-delay: 180ms;
+  }
+
+  /* Shared section typography */
+  .section-kicker {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6em;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .section-title {
+    margin-top: 0.5rem;
+    font-family: var(--font-teko);
+    font-size: clamp(2.25rem, 4.2vw, 3.25rem);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    line-height: 1.02;
+    color: rgba(255, 255, 255, 0.98);
+    text-wrap: balance;
+  }
+
+  .section-lede {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  @media (min-width: 768px) {
+    .section-lede {
+      font-size: 1.05rem;
+    }
+  }
+
+  /* Unified card surface + premium interactions */
+  .card-shell {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08); /* More subtle border */
+    background: rgba(20, 20, 22, 0.6); /* Flat semi-transparent dark */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Softer shadow */
+    backdrop-filter: blur(8px);
+  }
+
+  /* Card shell variant for white dashboard */
+  .theme-light .card-shell {
+    border: 1px solid rgba(7, 10, 17, 0.08);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(8px);
+  }
+
+  .card-shell::before {
+    display: none; /* Remove internal gradient noise */
+  }
+
+  .theme-light .card-shell::before {
+    display: none;
+  }
+
+  .card-shell::after {
+    display: none; /* Remove overlay */
+  }
+
+  .theme-light .card-shell::after {
+    display: none;
+  }
+
+  .premium-card {
+    position: relative;
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+    will-change: auto;
+  }
+
+  /* Remove the sweeping light effect on hover */
+  .premium-card::before {
+    display: none;
+  }
+
+  .premium-card::after {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .premium-card:hover {
+      transform: none; /* No movement */
+      border-color: rgba(255, 255, 255, 0.2); /* Just slightly lighter border */
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  /* Keyboard parity: keep the premium lift when tabbing into interactive content inside cards */
+  .premium-card:focus-within {
+    transform: none; /* No movement */
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .premium-card:focus-within::before {
+    display: none;
+  }
+
+  .premium-card:focus-within::after {
+    display: none;
+  }
+
+  .hero-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+    background-size: 240px 240px;
+    mix-blend-mode: overlay;
+    opacity: 0.1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cinematic-reveal {
+      animation: none;
+    }
+
+    .hero-ambient,
+    .animate-scroll-dot,
+    .btn-premium::before {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .premium-card,
+    .premium-card::before,
+    .premium-card::after {
+      transition: none;
+    }
+
+    .premium-card:hover {
+      transform: none;
+    }
+  }
+}

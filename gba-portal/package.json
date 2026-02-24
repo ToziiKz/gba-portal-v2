@@ -1,0 +1,50 @@
+{
+  "name": "gba-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "tailwind:build": "node scripts/build-tailwind.mjs",
+    "dev": "next dev",
+    "build": "NEXT_PUBLIC_BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ) next build",
+    "start": "next start",
+    "lint": "eslint \"src/**/*.{ts,tsx,js,jsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx,js,jsx}\" --fix",
+    "type-check": "tsc --noEmit",
+    "verify": "npm run lint && npm run type-check && npm run build",
+    "format": "prettier --write .",
+    "dev:reset": "bash scripts/dev-reset.sh"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.95.3",
+    "framer-motion": "^12.34.3",
+    "gsap": "^3.11.5",
+    "html-to-image": "^1.11.13",
+    "lightningcss-linux-x64-gnu": "^1.31.1",
+    "lucide-react": "^0.570.0",
+    "next": "16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "dotenv": "^17.3.1",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "lefthook": "^2.1.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.1"
+  }
+}

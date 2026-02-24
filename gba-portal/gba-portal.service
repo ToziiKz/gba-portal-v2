@@ -1,0 +1,21 @@
+[Unit]
+Description=GBA Portal (Next.js) - ESPACE GBA
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/.openclaw/workspace/gba-portal
+Environment=NODE_ENV=production
+Environment=PORT=3000
+Environment=HOSTNAME=0.0.0.0
+Environment=NODE_OPTIONS=--max-old-space-size=2048
+ExecStart=/usr/bin/node /root/.openclaw/workspace/gba-portal/node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3000
+Restart=always
+RestartSec=2
+KillSignal=SIGINT
+TimeoutStopSec=20
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

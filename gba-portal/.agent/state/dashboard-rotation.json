@@ -1,0 +1,19 @@
+{
+  "order": [
+    "planning",
+    "presences",
+    "joueurs",
+    "equipes",
+    "categories",
+    "licences",
+    "equipements",
+    "stock",
+    "staff",
+    "rapports",
+    "relances",
+    "competitions"
+  ],
+  "index": 8,
+  "lastModule": "stock",
+  "updatedAt": "2026-02-11T15:37:28Z"
+}
