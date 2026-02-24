@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'Licences · GBA Dashboard',
-}
+  title: "Licences · GBA Dashboard",
+};
 
 export default function LicencesPage() {
   return (
@@ -10,5 +10,5 @@ export default function LicencesPage() {
         Module retiré de la DB. Les infos licences sont désormais dans Joueurs.
       </p>
     </div>
-  )
+  );
 }

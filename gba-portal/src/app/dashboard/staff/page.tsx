@@ -1,27 +1,36 @@
-import { Suspense } from 'react'
-import { getStaffMembers } from './actions'
-import { StaffClient } from './StaffClient'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Suspense } from "react";
+import { getStaffMembers } from "./actions";
+import { StaffClient } from "./StaffClient";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
 
 export default async function DashboardStaffPage() {
-  const staffMembers = await getStaffMembers()
+  const staffMembers = await getStaffMembers();
 
   return (
     <Suspense fallback={<StaffLoading />}>
       <StaffClient initialMembers={staffMembers} />
     </Suspense>
-  )
+  );
 }
 
 function StaffLoading() {
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.6em] text-white/60">Module</p>
+        <p className="text-xs uppercase tracking-[0.6em] text-white/60">
+          Module
+        </p>
         <h2 className="mt-3 font-[var(--font-teko)] text-3xl font-black tracking-[0.06em] text-white md:text-4xl">
           Staff (annuaire)
         </h2>
-        <p className="mt-2 max-w-3xl text-sm text-white/70">Chargement de l’effectif…</p>
+        <p className="mt-2 max-w-3xl text-sm text-white/70">
+          Chargement de l’effectif…
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -56,5 +65,5 @@ function StaffLoading() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

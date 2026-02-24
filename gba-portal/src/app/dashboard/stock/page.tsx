@@ -1,27 +1,36 @@
-import { Suspense } from 'react'
-import { getStockItems } from './actions'
-import { StockClient } from './StockClient'
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card'
+import { Suspense } from "react";
+import { getStockItems } from "./actions";
+import { StockClient } from "./StockClient";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/Card";
 
 export default async function DashboardStockPage() {
-  const stockItems = await getStockItems()
+  const stockItems = await getStockItems();
 
   return (
     <Suspense fallback={<StockLoading />}>
       <StockClient initialStock={stockItems} />
     </Suspense>
-  )
+  );
 }
 
 function StockLoading() {
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.6em] text-white/60">Module</p>
+        <p className="text-xs uppercase tracking-[0.6em] text-white/60">
+          Module
+        </p>
         <h2 className="mt-3 font-[var(--font-teko)] text-3xl font-black tracking-[0.06em] text-white md:text-4xl">
           Stock & matériel
         </h2>
-        <p className="mt-2 max-w-3xl text-sm text-white/70">Chargement de l’inventaire…</p>
+        <p className="mt-2 max-w-3xl text-sm text-white/70">
+          Chargement de l’inventaire…
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -49,5 +58,5 @@ function StockLoading() {
         </div>
       </Card>
     </div>
-  )
+  );
 }

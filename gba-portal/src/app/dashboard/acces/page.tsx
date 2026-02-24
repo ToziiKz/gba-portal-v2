@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import { regenerateCoachInvitation, createDirectInvitation } from './actions'
-import { updateUserProfile, deleteUserProfile } from './update-actions'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { createClient } from "@/lib/supabase/server";
+import { regenerateCoachInvitation, createDirectInvitation } from "./actions";
+import { updateUserProfile, deleteUserProfile } from "./update-actions";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import {
   UserPlus,
   Search,
@@ -13,57 +13,65 @@ import {
   Lock,
   Save,
   Trash2,
-} from 'lucide-react'
-import Link from 'next/link'
+} from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
-  title: 'Accès & Permissions · GBA Dashboard',
-}
+  title: "Accès & Permissions · GBA Dashboard",
+};
 
-type Params = { invite?: string; status?: string; q?: string; ok?: string; err?: string }
+type Params = {
+  invite?: string;
+  status?: string;
+  q?: string;
+  ok?: string;
+  err?: string;
+};
 
 function toDateLabel(value: string | null) {
-  if (!value) return '—'
-  return value.split('T')[0]
+  if (!value) return "—";
+  return value.split("T")[0];
 }
 
 export default async function DashboardCoachAccessPage({
   searchParams,
 }: {
-  searchParams?: Promise<Params>
+  searchParams?: Promise<Params>;
 }) {
-  const supabase = await createClient()
-  const params = (await searchParams) ?? {}
+  const supabase = await createClient();
+  const params = (await searchParams) ?? {};
 
-  const statusFilter = params.status ?? 'pending'
+  const statusFilter = params.status ?? "pending";
 
   // 1. Charger les profils existants
   const { data: users } = await supabase
-    .from('profiles')
-    .select('id, full_name, email, role, is_active, updated_at')
-    .order('role', { ascending: true })
-    .order('full_name', { ascending: true })
+    .from("profiles")
+    .select("id, full_name, email, role, is_active, updated_at")
+    .order("role", { ascending: true })
+    .order("full_name", { ascending: true });
 
-  const existingEmails = new Set((users ?? []).map((u) => u.email.toLowerCase()))
+  const existingEmails = new Set(
+    (users ?? []).map((u) => u.email.toLowerCase()),
+  );
 
   // 2. Invitation-only workflow: coach access requests disabled
 
   // 3. Invitations : Filtrées par emails déjà présents
   const { data: rawInvitations } = await supabase
-    .from('coach_invitations')
-    .select('id, email, full_name, role, created_at, expires_at, used_at')
-    .is('used_at', null)
-    .order('created_at', { ascending: false })
+    .from("coach_invitations")
+    .select("id, email, full_name, role, created_at, expires_at, used_at")
+    .is("used_at", null)
+    .order("created_at", { ascending: false });
 
   const latestInvitations = (rawInvitations ?? []).filter(
-    (inv) => !existingEmails.has(inv.email.toLowerCase())
-  )
+    (inv) => !existingEmails.has(inv.email.toLowerCase()),
+  );
 
   // 4. Équipes
   const { data: teams } = await supabase
-    .from('teams')
-    .select('id, name, coach_id, category, pole')
-    .order('name', { ascending: true })
+    .from("teams")
+    .select("id, name, coach_id, category, pole")
+    .order("name", { ascending: true });
 
   return (
     <div className="space-y-8 pb-10">
@@ -76,12 +84,13 @@ export default async function DashboardCoachAccessPage({
             Accès & <span className="text-blue-600">Permissions</span>
           </h2>
           <p className="mt-2 text-sm text-slate-600 max-w-md font-medium">
-            Gérez les rôles, validez les membres et configurez les droits d&apos;accès.
+            Gérez les rôles, validez les membres et configurez les droits
+            d&apos;accès.
           </p>
         </div>
       </div>
 
-      {params.ok === '1' && (
+      {params.ok === "1" && (
         <Card className="rounded-3xl border-emerald-100 bg-emerald-50/50 overflow-hidden shadow-sm">
           <CardContent className="p-4 text-xs font-black uppercase tracking-wider text-emerald-700">
             Mise à jour enregistrée.
@@ -118,7 +127,7 @@ export default async function DashboardCoachAccessPage({
             </div>
             <div className="flex flex-wrap gap-3">
               <a
-                href={`mailto:?subject=${encodeURIComponent('Activation compte GBA')}&body=${encodeURIComponent(`Bonjour,\n\nVoici ton lien d’activation :\n${params.invite}\n\nCe lien expire dans 72h.`)}`}
+                href={`mailto:?subject=${encodeURIComponent("Activation compte GBA")}&body=${encodeURIComponent(`Bonjour,\n\nVoici ton lien d’activation :\n${params.invite}\n\nCe lien expire dans 72h.`)}`}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 <Mail className="mr-2 h-4 w-4" />
@@ -231,7 +240,10 @@ export default async function DashboardCoachAccessPage({
               <CardContent className="p-0">
                 <div className="divide-y divide-slate-50">
                   {latestInvitations.map((inv) => (
-                    <div key={inv.id} className="p-4 flex items-center justify-between group">
+                    <div
+                      key={inv.id}
+                      className="p-4 flex items-center justify-between group"
+                    >
                       <div className="min-w-0">
                         <p className="text-xs font-black text-slate-800 uppercase truncate leading-none mb-1">
                           {inv.full_name || inv.email}
@@ -241,7 +253,11 @@ export default async function DashboardCoachAccessPage({
                         </p>
                       </div>
                       <form action={regenerateCoachInvitation}>
-                        <input type="hidden" name="invitationId" value={inv.id} />
+                        <input
+                          type="hidden"
+                          name="invitationId"
+                          value={inv.id}
+                        />
                         <Button
                           variant="ghost"
                           size="sm"
@@ -264,7 +280,7 @@ export default async function DashboardCoachAccessPage({
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
                   <input
                     name="q"
-                    defaultValue={params.q ?? ''}
+                    defaultValue={params.q ?? ""}
                     placeholder="Rechercher..."
                     className="w-full rounded-2xl border border-slate-100 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium outline-none text-slate-900"
                   />
@@ -306,8 +322,10 @@ export default async function DashboardCoachAccessPage({
 
             <div className="space-y-6">
               {users?.map((user) => {
-                const assignedTeams = (teams ?? []).filter((t) => t.coach_id === user.id)
-                const isActive = user.is_active !== false
+                const assignedTeams = (teams ?? []).filter(
+                  (t) => t.coach_id === user.id,
+                );
+                const isActive = user.is_active !== false;
 
                 return (
                   <Card
@@ -323,17 +341,17 @@ export default async function DashboardCoachAccessPage({
                             <div className="flex items-center gap-4">
                               <div className="relative">
                                 <div
-                                  className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}
+                                  className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase ${user.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}
                                 >
                                   {user.full_name?.slice(0, 2)}
                                 </div>
                                 <div
-                                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${isActive ? "bg-emerald-500" : "bg-slate-300"}`}
                                 />
                               </div>
                               <div className="min-w-0">
                                 <p className="font-black text-slate-900 uppercase tracking-widest leading-none text-base truncate">
-                                  {user.full_name || 'Sans Nom'}
+                                  {user.full_name || "Sans Nom"}
                                 </p>
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 truncate">
                                   {user.email}
@@ -348,7 +366,7 @@ export default async function DashboardCoachAccessPage({
                                 </span>
                                 <select
                                   name="role"
-                                  defaultValue={user.role ?? 'coach'}
+                                  defaultValue={user.role ?? "coach"}
                                   className="bg-transparent text-[10px] font-black uppercase text-slate-900 outline-none cursor-pointer"
                                 >
                                   <option value="admin">Admin</option>
@@ -374,12 +392,13 @@ export default async function DashboardCoachAccessPage({
                                 size="sm"
                                 className="rounded-xl bg-[#070A11] hover:bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest h-10 px-4 border-none"
                               >
-                                <Save className="mr-2 h-3.5 w-3.5 text-white" /> Enregistrer
+                                <Save className="mr-2 h-3.5 w-3.5 text-white" />{" "}
+                                Enregistrer
                               </Button>
                             </div>
                           </div>
 
-                          {user.role === 'coach' && (
+                          {user.role === "coach" && (
                             <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
                               <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/50">
                                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -391,13 +410,15 @@ export default async function DashboardCoachAccessPage({
                                   {(teams ?? []).map((team) => (
                                     <label
                                       key={team.id}
-                                      className={`group relative flex items-center gap-1.5 p-2 rounded-lg border transition-all cursor-pointer select-none ${team.coach_id === user.id ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'bg-white border-slate-200 text-slate-500 hover:border-blue-200'}`}
+                                      className={`group relative flex items-center gap-1.5 p-2 rounded-lg border transition-all cursor-pointer select-none ${team.coach_id === user.id ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200"}`}
                                     >
                                       <input
                                         type="checkbox"
                                         name="teamIds"
                                         value={team.id}
-                                        defaultChecked={team.coach_id === user.id}
+                                        defaultChecked={
+                                          team.coach_id === user.id
+                                        }
                                         className="sr-only"
                                       />
                                       <span className="text-[8px] font-black uppercase tracking-tighter truncate">
@@ -413,7 +434,7 @@ export default async function DashboardCoachAccessPage({
                             </div>
                           )}
 
-                          {user.role === 'staff' && (
+                          {user.role === "staff" && (
                             <div className="bg-amber-50/30 rounded-2xl p-4 border border-amber-100 border-dashed flex items-center gap-3">
                               <Lock className="h-4 w-4 text-amber-400" />
                               <p className="text-[10px] text-amber-800/60 font-black uppercase tracking-widest">
@@ -428,7 +449,11 @@ export default async function DashboardCoachAccessPage({
                             ID: {user.id.slice(0, 12)}...
                           </p>
                           <form action={deleteUserProfile}>
-                            <input type="hidden" name="userId" value={user.id} />
+                            <input
+                              type="hidden"
+                              name="userId"
+                              value={user.id}
+                            />
                             <button
                               type="submit"
                               className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-red-500 transition-all group px-2"
@@ -441,12 +466,12 @@ export default async function DashboardCoachAccessPage({
                       </div>
                     </CardContent>
                   </Card>
-                )
+                );
               })}
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

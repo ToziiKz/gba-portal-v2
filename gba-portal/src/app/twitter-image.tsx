@@ -1,9 +1,9 @@
-import OpenGraphImage, { alt, size } from './opengraph-image'
+import OpenGraphImage, { alt, size } from "./opengraph-image";
 
-export const runtime = 'edge'
+export const runtime = "edge";
 
-export { alt, size }
+export { alt, size };
 
 export default function TwitterImage() {
-  return OpenGraphImage()
+  return OpenGraphImage();
 }

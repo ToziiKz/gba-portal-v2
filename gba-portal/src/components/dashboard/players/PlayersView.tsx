@@ -1,169 +1,183 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useSearchParams } from 'next/navigation'
+import * as React from "react";
+import { useSearchParams } from "next/navigation";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { CreatePlayerModal } from './CreatePlayerModal'
-import { createClient } from '@/lib/supabase/client'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { CreatePlayerModal } from "./CreatePlayerModal";
+import { createClient } from "@/lib/supabase/client";
 
 export type PlayerWithTeam = {
-  id: string
-  firstname: string
-  lastname: string
-  team_id: string
-  updated_at: string
-  category: string
-  club_name: string
-  license_number: string
-  gender: string
-  status_label?: string
-  status_start_date?: string
-  status_end_date?: string
-  mobile_phone?: string
-  email?: string
-  legal_guardian_name?: string
-  address_street?: string
-  address_zipcode?: string
-  address_city?: string
+  id: string;
+  firstname: string;
+  lastname: string;
+  team_id: string;
+  updated_at: string;
+  category: string;
+  club_name: string;
+  license_number: string;
+  gender: string;
+  status_label?: string;
+  status_start_date?: string;
+  status_end_date?: string;
+  mobile_phone?: string;
+  email?: string;
+  legal_guardian_name?: string;
+  address_street?: string;
+  address_zipcode?: string;
+  address_city?: string;
   team?: {
-    name: string
-    category: string
-    gender: string
-  } | null
-}
+    name: string;
+    category: string;
+    gender: string;
+  } | null;
+};
 
 type Props = {
-  initialPlayers: PlayerWithTeam[]
-  teams: { id: string; name: string }[]
-}
+  initialPlayers: PlayerWithTeam[];
+  teams: { id: string; name: string }[];
+};
 
 function inputBaseClassName() {
-  return 'w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20'
+  return "w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20";
 }
 
 function formatPhone(phone?: string | null) {
-  const raw = (phone ?? '').trim()
-  if (!raw) return '—'
-  const digits = raw.replace(/\D/g, '')
-  if (digits.length === 9 && (digits.startsWith('6') || digits.startsWith('7'))) return `0${digits}`
-  if (digits.length === 11 && digits.startsWith('33') && (digits[2] === '6' || digits[2] === '7'))
-    return `0${digits.slice(2)}`
-  return raw
+  const raw = (phone ?? "").trim();
+  if (!raw) return "—";
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 9 && (digits.startsWith("6") || digits.startsWith("7")))
+    return `0${digits}`;
+  if (
+    digits.length === 11 &&
+    digits.startsWith("33") &&
+    (digits[2] === "6" || digits[2] === "7")
+  )
+    return `0${digits.slice(2)}`;
+  return raw;
 }
 
-type TabKey = 'resume' | 'contact' | 'legal' | 'presences'
+type TabKey = "resume" | "contact" | "legal" | "presences";
 
 type PresenceStats = {
-  present: number
-  late: number
-  excused: number
-  absent: number
-  total: number
-}
+  present: number;
+  late: number;
+  excused: number;
+  absent: number;
+  total: number;
+};
 
 export function PlayersView({ initialPlayers, teams }: Props) {
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams();
 
-  const [query, setQuery] = React.useState('')
-  const [selectedId, setSelectedId] = React.useState<string | null>(null)
-  const [isCreateOpen, setCreateOpen] = React.useState(false)
-  const [filterCategory, setFilterCategory] = React.useState<string>('all')
-  const [filterClub, setFilterClub] = React.useState<string>('all')
-  const [tab, setTab] = React.useState<TabKey>('resume')
-  const [presenceStats, setPresenceStats] = React.useState<PresenceStats | null>(null)
-  const [presenceLoading, setPresenceLoading] = React.useState(false)
+  const [query, setQuery] = React.useState("");
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [isCreateOpen, setCreateOpen] = React.useState(false);
+  const [filterCategory, setFilterCategory] = React.useState<string>("all");
+  const [filterClub, setFilterClub] = React.useState<string>("all");
+  const [tab, setTab] = React.useState<TabKey>("resume");
+  const [presenceStats, setPresenceStats] =
+    React.useState<PresenceStats | null>(null);
+  const [presenceLoading, setPresenceLoading] = React.useState(false);
 
   // Hydrate from URL ONCE
   React.useEffect(() => {
-    const q = searchParams.get('q')
-    const pid = searchParams.get('playerId')
+    const q = searchParams.get("q");
+    const pid = searchParams.get("playerId");
 
-    if (q) setQuery(q)
+    if (q) setQuery(q);
 
     if (pid) {
-      setSelectedId(pid)
+      setSelectedId(pid);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   // Manual update function to update URL without triggering re-renders loop
   const updateUrl = (newQuery: string, newId: string | null) => {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(window.location.search);
 
-    if (newQuery) params.set('q', newQuery)
-    else params.delete('q')
+    if (newQuery) params.set("q", newQuery);
+    else params.delete("q");
 
-    if (newId) params.set('playerId', newId)
-    else params.delete('playerId')
+    if (newId) params.set("playerId", newId);
+    else params.delete("playerId");
 
-    const newUrl = `${window.location.pathname}?${params.toString()}`
-    window.history.replaceState(null, '', newUrl)
-  }
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState(null, "", newUrl);
+  };
 
   const handleSelectPlayer = (id: string) => {
-    setSelectedId(id)
-    updateUrl(query, id)
-  }
+    setSelectedId(id);
+    updateUrl(query, id);
+  };
 
   const handleSearch = (val: string) => {
-    setQuery(val)
-    updateUrl(val, selectedId)
-  }
+    setQuery(val);
+    updateUrl(val, selectedId);
+  };
 
   const uniqueCategories = React.useMemo(
-    () => Array.from(new Set(initialPlayers.map((p) => p.category).filter(Boolean))).sort(),
-    [initialPlayers]
-  )
+    () =>
+      Array.from(
+        new Set(initialPlayers.map((p) => p.category).filter(Boolean)),
+      ).sort(),
+    [initialPlayers],
+  );
 
   const uniqueClubs = React.useMemo(
-    () => Array.from(new Set(initialPlayers.map((p) => p.club_name).filter(Boolean))).sort(),
-    [initialPlayers]
-  )
+    () =>
+      Array.from(
+        new Set(initialPlayers.map((p) => p.club_name).filter(Boolean)),
+      ).sort(),
+    [initialPlayers],
+  );
 
   const filtered = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim().toLowerCase();
     return initialPlayers.filter((p) => {
       // 1. Text Search
       if (q) {
-        const hay = `${p.firstname} ${p.lastname} ${p.category} ${p.club_name}`.toLowerCase()
-        if (!hay.includes(q)) return false
+        const hay =
+          `${p.firstname} ${p.lastname} ${p.category} ${p.club_name}`.toLowerCase();
+        if (!hay.includes(q)) return false;
       }
       // 2. Category Filter
-      if (filterCategory !== 'all' && p.category !== filterCategory) return false
+      if (filterCategory !== "all" && p.category !== filterCategory)
+        return false;
 
       // 3. Club Filter
-      if (filterClub !== 'all' && p.club_name !== filterClub) return false
+      if (filterClub !== "all" && p.club_name !== filterClub) return false;
 
-      return true
-    })
-  }, [initialPlayers, query, filterCategory, filterClub])
+      return true;
+    });
+  }, [initialPlayers, query, filterCategory, filterClub]);
 
   const selectedPlayer = React.useMemo(() => {
-    return filtered.find((p) => p.id === selectedId) || filtered[0] || null
-  }, [filtered, selectedId])
+    return filtered.find((p) => p.id === selectedId) || filtered[0] || null;
+  }, [filtered, selectedId]);
 
   React.useEffect(() => {
     // Reset tab + load presence stats when switching player
-    setTab('resume')
-    setPresenceStats(null)
+    setTab("resume");
+    setPresenceStats(null);
 
-    if (!selectedPlayer?.id) return
+    if (!selectedPlayer?.id) return;
 
-    let cancelled = false
+    let cancelled = false;
     async function loadPresence() {
-      setPresenceLoading(true)
+      setPresenceLoading(true);
       try {
-        const supabase = createClient()
+        const supabase = createClient();
         const { data, error } = await supabase
-          .from('attendance')
-          .select('status')
-          .eq('player_id', selectedPlayer.id)
+          .from("attendance")
+          .select("status")
+          .eq("player_id", selectedPlayer.id);
 
-        if (cancelled) return
+        if (cancelled) return;
         if (error) {
-          setPresenceStats(null)
-          return
+          setPresenceStats(null);
+          return;
         }
 
         const stats: PresenceStats = {
@@ -172,28 +186,28 @@ export function PlayersView({ initialPlayers, teams }: Props) {
           excused: 0,
           absent: 0,
           total: 0,
-        }
+        };
 
         for (const row of data ?? []) {
-          stats.total += 1
-          if (row.status === 'present') stats.present += 1
-          else if (row.status === 'late') stats.late += 1
-          else if (row.status === 'excused') stats.excused += 1
-          else if (row.status === 'absent') stats.absent += 1
+          stats.total += 1;
+          if (row.status === "present") stats.present += 1;
+          else if (row.status === "late") stats.late += 1;
+          else if (row.status === "excused") stats.excused += 1;
+          else if (row.status === "absent") stats.absent += 1;
         }
 
-        setPresenceStats(stats)
+        setPresenceStats(stats);
       } finally {
-        if (!cancelled) setPresenceLoading(false)
+        if (!cancelled) setPresenceLoading(false);
       }
     }
 
-    loadPresence()
+    loadPresence();
 
     return () => {
-      cancelled = true
-    }
-  }, [selectedPlayer?.id])
+      cancelled = true;
+    };
+  }, [selectedPlayer?.id]);
 
   return (
     <>
@@ -255,12 +269,18 @@ export function PlayersView({ initialPlayers, teams }: Props) {
               </div>
 
               <div className="flex gap-2">
-                <Button size="sm" variant="secondary" onClick={() => setCreateOpen(true)}>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => setCreateOpen(true)}
+                >
                   Ajouter un joueur
                 </Button>
               </div>
             </div>
-            <p className="mt-4 text-sm text-white/60">{filtered.length} joueur(s)</p>
+            <p className="mt-4 text-sm text-white/60">
+              {filtered.length} joueur(s)
+            </p>
           </CardContent>
         </Card>
 
@@ -275,7 +295,7 @@ export function PlayersView({ initialPlayers, teams }: Props) {
               ) : (
                 <ul className="grid gap-3">
                   {filtered.map((p) => {
-                    const isSelected = p.id === selectedPlayer?.id
+                    const isSelected = p.id === selectedPlayer?.id;
                     return (
                       <li key={p.id}>
                         <button
@@ -283,8 +303,8 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                           onClick={() => handleSelectPlayer(p.id)}
                           className={`group w-full rounded-2xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
                             isSelected
-                              ? 'border-white/25 bg-white/10'
-                              : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7'
+                              ? "border-white/25 bg-white/10"
+                              : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7"
                           }`}
                         >
                           <div className="flex items-start justify-between gap-3">
@@ -293,14 +313,16 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                                 {p.lastname} {p.firstname}
                               </p>
                               <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/55">
-                                {p.category ?? 'Sans catégorie'}
+                                {p.category ?? "Sans catégorie"}
                               </p>
-                              <p className="text-[10px] text-white/40">{p.club_name}</p>
+                              <p className="text-[10px] text-white/40">
+                                {p.club_name}
+                              </p>
                             </div>
                           </div>
                         </button>
                       </li>
-                    )
+                    );
                   })}
                 </ul>
               )}
@@ -320,10 +342,10 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                   <div className="flex flex-wrap gap-2">
                     {(
                       [
-                        { key: 'resume', label: 'Résumé' },
-                        { key: 'contact', label: 'Contact' },
-                        { key: 'legal', label: 'Resp. légal' },
-                        { key: 'presences', label: 'Présences' },
+                        { key: "resume", label: "Résumé" },
+                        { key: "contact", label: "Contact" },
+                        { key: "legal", label: "Resp. légal" },
+                        { key: "presences", label: "Présences" },
                       ] as const
                     ).map((t) => (
                       <button
@@ -333,8 +355,8 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                         className={
                           `rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider border transition ` +
                           (tab === t.key
-                            ? 'bg-white text-black border-white'
-                            : 'bg-white/5 text-white/70 border-white/10 hover:bg-white/10')
+                            ? "bg-white text-black border-white"
+                            : "bg-white/5 text-white/70 border-white/10 hover:bg-white/10")
                         }
                       >
                         {t.label}
@@ -342,7 +364,7 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                     ))}
                   </div>
 
-                  {tab === 'resume' ? (
+                  {tab === "resume" ? (
                     <div className="grid gap-6">
                       <div>
                         <div className="flex justify-between items-start">
@@ -351,15 +373,20 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                               Identité
                             </p>
                             <h3 className="mt-2 text-3xl font-[var(--font-teko)] uppercase font-bold text-white">
-                              {selectedPlayer.lastname} {selectedPlayer.firstname}
+                              {selectedPlayer.lastname}{" "}
+                              {selectedPlayer.firstname}
                             </h3>
                             <p className="mt-1 text-sm text-white/70">
                               {(() => {
-                                const g = (selectedPlayer.gender ?? '').trim().toUpperCase()
-                                if (g === 'M' || g === 'MALE') return 'Masculin'
-                                if (g === 'F' || g === 'FEMALE') return 'Féminin'
-                                return 'Non renseigné'
-                              })()}{' '}
+                                const g = (selectedPlayer.gender ?? "")
+                                  .trim()
+                                  .toUpperCase();
+                                if (g === "M" || g === "MALE")
+                                  return "Masculin";
+                                if (g === "F" || g === "FEMALE")
+                                  return "Féminin";
+                                return "Non renseigné";
+                              })()}{" "}
                               • {selectedPlayer.category}
                             </p>
                           </div>
@@ -382,25 +409,31 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                           </p>
 
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Club</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Club
+                            </p>
                             <p className="text-sm font-semibold text-white">
                               {selectedPlayer.club_name}
                             </p>
                           </div>
 
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Licence</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Licence
+                            </p>
                             <p className="text-sm font-mono text-white/80">
-                              {selectedPlayer.license_number ?? '—'}
+                              {selectedPlayer.license_number ?? "—"}
                             </p>
                           </div>
 
                           {selectedPlayer.status_label && (
                             <div className="space-y-1 pt-2 border-t border-white/10 mt-2">
-                              <p className="text-[10px] uppercase text-white/40">Mutation</p>
+                              <p className="text-[10px] uppercase text-white/40">
+                                Mutation
+                              </p>
                               <p className="text-xs text-white/70">
-                                Du {selectedPlayer.status_start_date ?? '?'} au{' '}
-                                {selectedPlayer.status_end_date ?? '?'}
+                                Du {selectedPlayer.status_start_date ?? "?"} au{" "}
+                                {selectedPlayer.status_end_date ?? "?"}
                               </p>
                             </div>
                           )}
@@ -412,14 +445,18 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                           </p>
 
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Email</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Email
+                            </p>
                             <p className="text-sm text-white break-all">
-                              {selectedPlayer.email || '—'}
+                              {selectedPlayer.email || "—"}
                             </p>
                           </div>
 
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Mobile</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Mobile
+                            </p>
                             <p className="text-sm text-white">
                               {formatPhone(selectedPlayer.mobile_phone)}
                             </p>
@@ -434,37 +471,46 @@ export function PlayersView({ initialPlayers, teams }: Props) {
 
                         <div className="grid sm:grid-cols-2 gap-4">
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Nom</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Nom
+                            </p>
                             <p className="text-sm font-semibold text-white">
-                              {selectedPlayer.legal_guardian_name || '—'}
+                              {selectedPlayer.legal_guardian_name || "—"}
                             </p>
                           </div>
 
                           <div className="space-y-1">
-                            <p className="text-[10px] uppercase text-white/40">Adresse</p>
+                            <p className="text-[10px] uppercase text-white/40">
+                              Adresse
+                            </p>
                             <p className="text-sm text-white/80">
                               {selectedPlayer.address_street}
                               <br />
-                              {selectedPlayer.address_zipcode} {selectedPlayer.address_city}
+                              {selectedPlayer.address_zipcode}{" "}
+                              {selectedPlayer.address_city}
                             </p>
                           </div>
                         </div>
                       </div>
                     </div>
-                  ) : tab === 'contact' ? (
+                  ) : tab === "contact" ? (
                     <div className="grid gap-4">
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">Email</p>
+                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                          Email
+                        </p>
                         <p className="mt-2 text-sm text-white break-all">
-                          {selectedPlayer.email || '—'}
+                          {selectedPlayer.email || "—"}
                         </p>
                         <div className="mt-3 flex gap-2">
                           <Button
                             size="sm"
                             variant="secondary"
                             onClick={async () => {
-                              if (!selectedPlayer.email) return
-                              await navigator.clipboard.writeText(selectedPlayer.email)
+                              if (!selectedPlayer.email) return;
+                              await navigator.clipboard.writeText(
+                                selectedPlayer.email,
+                              );
                             }}
                           >
                             Copier
@@ -473,7 +519,9 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                       </div>
 
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">Mobile</p>
+                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                          Mobile
+                        </p>
                         <p className="mt-2 text-sm text-white">
                           {formatPhone(selectedPlayer.mobile_phone)}
                         </p>
@@ -482,10 +530,10 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                             size="sm"
                             variant="secondary"
                             onClick={async () => {
-                              if (!selectedPlayer.mobile_phone) return
+                              if (!selectedPlayer.mobile_phone) return;
                               await navigator.clipboard.writeText(
-                                formatPhone(selectedPlayer.mobile_phone)
-                              )
+                                formatPhone(selectedPlayer.mobile_phone),
+                              );
                             }}
                           >
                             Copier
@@ -493,22 +541,25 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                         </div>
                       </div>
                     </div>
-                  ) : tab === 'legal' ? (
+                  ) : tab === "legal" ? (
                     <div className="grid gap-4">
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                         <p className="text-xs uppercase tracking-[0.35em] text-white/55">
                           Responsable légal
                         </p>
                         <p className="mt-2 text-sm font-semibold text-white">
-                          {selectedPlayer.legal_guardian_name || '—'}
+                          {selectedPlayer.legal_guardian_name || "—"}
                         </p>
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">Adresse</p>
+                        <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                          Adresse
+                        </p>
                         <p className="mt-2 text-sm text-white/80">
-                          {selectedPlayer.address_street || '—'}
+                          {selectedPlayer.address_street || "—"}
                           <br />
-                          {selectedPlayer.address_zipcode} {selectedPlayer.address_city}
+                          {selectedPlayer.address_zipcode}{" "}
+                          {selectedPlayer.address_city}
                         </p>
                       </div>
                     </div>
@@ -518,9 +569,13 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                         Statistiques
                       </p>
                       {presenceLoading ? (
-                        <p className="mt-3 text-sm text-white/60">Chargement…</p>
+                        <p className="mt-3 text-sm text-white/60">
+                          Chargement…
+                        </p>
                       ) : !presenceStats ? (
-                        <p className="mt-3 text-sm text-white/60">Aucune donnée de présence.</p>
+                        <p className="mt-3 text-sm text-white/60">
+                          Aucune donnée de présence.
+                        </p>
                       ) : (
                         <div className="mt-4 grid gap-2">
                           <div className="flex justify-between text-sm text-white">
@@ -549,7 +604,9 @@ export function PlayersView({ initialPlayers, teams }: Props) {
                           </div>
                           <div className="mt-2 border-t border-white/10 pt-2 flex justify-between text-sm text-white/80">
                             <span>Total séances</span>
-                            <span className="font-semibold">{presenceStats.total}</span>
+                            <span className="font-semibold">
+                              {presenceStats.total}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -561,7 +618,11 @@ export function PlayersView({ initialPlayers, teams }: Props) {
           </Card>
         </div>
       </div>
-      <CreatePlayerModal isOpen={isCreateOpen} onClose={() => setCreateOpen(false)} teams={teams} />
+      <CreatePlayerModal
+        isOpen={isCreateOpen}
+        onClose={() => setCreateOpen(false)}
+        teams={teams}
+      />
     </>
-  )
+  );
 }

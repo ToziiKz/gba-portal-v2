@@ -1,56 +1,78 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
+import * as React from "react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 type StockMovementItem = {
-  label: string
-  qty: number
-}
-import { cn } from '@/components/ui/cn'
+  label: string;
+  qty: number;
+};
+import { cn } from "@/components/ui/cn";
 
-type MovementType = 'entry' | 'exit'
+type MovementType = "entry" | "exit";
 
 const REASONS = {
-  entry: ['Achat fournisseur', 'Retour prêt', 'Don', 'Correction inventaire', 'Autre'],
-  exit: ['Dotation joueur', 'Perte / Vol', 'Usure / Casse', 'Correction inventaire', 'Autre'],
-}
+  entry: [
+    "Achat fournisseur",
+    "Retour prêt",
+    "Don",
+    "Correction inventaire",
+    "Autre",
+  ],
+  exit: [
+    "Dotation joueur",
+    "Perte / Vol",
+    "Usure / Casse",
+    "Correction inventaire",
+    "Autre",
+  ],
+};
 
 interface StockMovementModalProps {
-  isOpen: boolean
-  onClose: () => void
-  item: StockMovementItem | null
-  onConfirm: (payload: { type: MovementType; amount: number; reason: string; note: string }) => void
+  isOpen: boolean;
+  onClose: () => void;
+  item: StockMovementItem | null;
+  onConfirm: (payload: {
+    type: MovementType;
+    amount: number;
+    reason: string;
+    note: string;
+  }) => void;
 }
 
-export function StockMovementModal({ isOpen, onClose, item, onConfirm }: StockMovementModalProps) {
-  const [type, setType] = React.useState<MovementType>('exit')
-  const [amount, setAmount] = React.useState(1)
-  const [reason, setReason] = React.useState(REASONS.exit[0])
-  const [note, setNote] = React.useState('')
+export function StockMovementModal({
+  isOpen,
+  onClose,
+  item,
+  onConfirm,
+}: StockMovementModalProps) {
+  const [type, setType] = React.useState<MovementType>("exit");
+  const [amount, setAmount] = React.useState(1);
+  const [reason, setReason] = React.useState(REASONS.exit[0]);
+  const [note, setNote] = React.useState("");
 
   // Reset state when modal opens/closes or item changes
   React.useEffect(() => {
     if (isOpen) {
-      setType('exit')
-      setAmount(1)
-      setReason(REASONS.exit[0])
-      setNote('')
+      setType("exit");
+      setAmount(1);
+      setReason(REASONS.exit[0]);
+      setNote("");
     }
-  }, [isOpen, item])
+  }, [isOpen, item]);
 
   // Update reasons when type changes
   React.useEffect(() => {
-    setReason(REASONS[type][0])
-  }, [type])
+    setReason(REASONS[type][0]);
+  }, [type]);
 
-  if (!item) return null
+  if (!item) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onConfirm({ type, amount, reason, note })
-    onClose()
-  }
+    e.preventDefault();
+    onConfirm({ type, amount, reason, note });
+    onClose();
+  };
 
   return (
     <Modal
@@ -64,22 +86,24 @@ export function StockMovementModal({ isOpen, onClose, item, onConfirm }: StockMo
         <div className="grid grid-cols-2 gap-2 rounded-xl bg-white/5 p-1">
           <button
             type="button"
-            onClick={() => setType('entry')}
+            onClick={() => setType("entry")}
             className={cn(
-              'rounded-lg py-2 text-sm font-semibold transition-all',
-              type === 'entry'
-                ? 'bg-emerald-500/20 text-emerald-400'
-                : 'text-white/40 hover:text-white/70'
+              "rounded-lg py-2 text-sm font-semibold transition-all",
+              type === "entry"
+                ? "bg-emerald-500/20 text-emerald-400"
+                : "text-white/40 hover:text-white/70",
             )}
           >
             Entrée (+)
           </button>
           <button
             type="button"
-            onClick={() => setType('exit')}
+            onClick={() => setType("exit")}
             className={cn(
-              'rounded-lg py-2 text-sm font-semibold transition-all',
-              type === 'exit' ? 'bg-red-500/20 text-red-400' : 'text-white/40 hover:text-white/70'
+              "rounded-lg py-2 text-sm font-semibold transition-all",
+              type === "exit"
+                ? "bg-red-500/20 text-red-400"
+                : "text-white/40 hover:text-white/70",
             )}
           >
             Sortie (-)
@@ -166,15 +190,21 @@ export function StockMovementModal({ isOpen, onClose, item, onConfirm }: StockMo
           <div className="flex items-center justify-between text-sm">
             <span className="text-white/50">Nouveau stock estimé :</span>
             <span className="font-mono font-bold text-white">
-              {item.qty} {type === 'entry' ? '+' : '-'} {amount} ={' '}
-              {type === 'entry' ? item.qty + amount : Math.max(0, item.qty - amount)}
+              {item.qty} {type === "entry" ? "+" : "-"} {amount} ={" "}
+              {type === "entry"
+                ? item.qty + amount
+                : Math.max(0, item.qty - amount)}
             </span>
           </div>
-          <Button type="submit" variant="primary" className="w-full py-6 text-base">
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full py-6 text-base"
+          >
             Valider le mouvement
           </Button>
         </div>
       </form>
     </Modal>
-  )
+  );
 }

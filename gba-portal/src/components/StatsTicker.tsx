@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { motion } from 'framer-motion'
+import { motion } from "framer-motion";
 
 type StatItem = {
-  label: string
-  value: string
-}
+  label: string;
+  value: string;
+};
 
 type StatsTickerProps = {
-  stats: StatItem[]
-}
+  stats: StatItem[];
+};
 
-const motionEase: [number, number, number, number] = [0.22, 1, 0.36, 1]
+const motionEase: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const reveal = {
   hidden: { opacity: 0, y: 24 },
@@ -20,21 +20,21 @@ const reveal = {
     y: 0,
     transition: { duration: 0.7, ease: motionEase },
   },
-}
+};
 
 export function StatsTicker({ stats }: StatsTickerProps) {
-  const ribbon = [...stats, ...stats]
+  const ribbon = [...stats, ...stats];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 sm:grid-rows-2">
         {stats.map((item, index) => {
-          const featured = index === 0
+          const featured = index === 0;
           const className = featured
-            ? 'sm:col-span-2 sm:row-span-2'
+            ? "sm:col-span-2 sm:row-span-2"
             : index === 1
-              ? 'sm:col-span-2'
-              : 'sm:col-span-1'
+              ? "sm:col-span-2"
+              : "sm:col-span-1";
 
           return (
             <motion.article
@@ -55,14 +55,14 @@ export function StatsTicker({ stats }: StatsTickerProps) {
               </p>
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
             </motion.article>
-          )
+          );
         })}
       </div>
 
       <div className="relative overflow-hidden rounded-full border border-white/10 bg-white/[0.03] py-2">
         <motion.div
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 22, ease: 'linear', repeat: Infinity }}
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 22, ease: "linear", repeat: Infinity }}
           className="flex w-max"
         >
           {ribbon.map((item, idx) => (
@@ -76,5 +76,5 @@ export function StatsTicker({ stats }: StatsTickerProps) {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

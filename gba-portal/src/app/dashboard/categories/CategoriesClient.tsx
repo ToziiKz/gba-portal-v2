@@ -1,189 +1,217 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import Link from 'next/link'
+import * as React from "react";
+import Link from "next/link";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Modal } from '@/components/ui/Modal'
-import { createCategory, updateCategory, deleteCategory } from './actions'
-import { useRouter } from 'next/navigation'
-import { usePermissions } from '@/components/PermissionsProvider'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { createCategory, updateCategory, deleteCategory } from "./actions";
+import { useRouter } from "next/navigation";
+import { usePermissions } from "@/components/PermissionsProvider";
 
-export type CategoryPole = 'École de foot' | 'Pré-formation' | 'Formation' | 'Seniors'
+export type CategoryPole =
+  | "École de foot"
+  | "Pré-formation"
+  | "Formation"
+  | "Seniors";
 
 export type Category = {
-  id: string
-  name: string
-  pole: string
-  age_range_label?: string
-  teams_label?: string
-  teams_count: number
-  players_estimate: number
-  lead_staff: { id: string; name: string; role: string }[]
-  updated_at: string
-  notes?: string
-}
+  id: string;
+  name: string;
+  pole: string;
+  age_range_label?: string;
+  teams_label?: string;
+  teams_count: number;
+  players_estimate: number;
+  lead_staff: { id: string; name: string; role: string }[];
+  updated_at: string;
+  notes?: string;
+};
 
 function inputBaseClassName() {
-  return 'w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20'
+  return "w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20";
 }
 
 function roleLabel(role: string) {
   switch (role) {
-    case 'resp-categorie':
-      return 'Resp. catégorie'
-    case 'coord':
-      return 'Coordinateur'
-    case 'coach':
-      return 'Coach'
+    case "resp-categorie":
+      return "Resp. catégorie";
+    case "coord":
+      return "Coordinateur";
+    case "coach":
+      return "Coach";
     default:
-      return role
+      return role;
   }
 }
 
-const POLES: CategoryPole[] = ['École de foot', 'Pré-formation', 'Formation', 'Seniors']
+const POLES: CategoryPole[] = [
+  "École de foot",
+  "Pré-formation",
+  "Formation",
+  "Seniors",
+];
 
-const STORAGE_KEY = 'gba.dashboard.categories.state.v1'
+const STORAGE_KEY = "gba.dashboard.categories.state.v1";
 
 type StoredState = {
-  query?: string
-  pole?: string
-  selectedId?: string | null
-}
+  query?: string;
+  pole?: string;
+  selectedId?: string | null;
+};
 
-export default function CategoriesClient({ initialCategories }: { initialCategories: Category[] }) {
-  const router = useRouter()
-  const { role } = usePermissions()
-  const canWrite = role === 'admin' || role === 'resp_sportif'
+export default function CategoriesClient({
+  initialCategories,
+}: {
+  initialCategories: Category[];
+}) {
+  const router = useRouter();
+  const { role } = usePermissions();
+  const canWrite = role === "admin" || role === "resp_sportif";
 
-  const [categories, setCategories] = React.useState<Category[]>(initialCategories)
-  const [query, setQuery] = React.useState('')
-  const [pole, setPole] = React.useState<string>('all')
-  const [selectedId, setSelectedId] = React.useState<string | null>(null)
-  const [isModalOpen, setIsModalOpen] = React.useState(false)
-  const [isEditMode, setIsEditMode] = React.useState(false)
-  const [currentCategory, setCurrentCategory] = React.useState<Partial<Category>>({})
+  const [categories, setCategories] =
+    React.useState<Category[]>(initialCategories);
+  const [query, setQuery] = React.useState("");
+  const [pole, setPole] = React.useState<string>("all");
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isEditMode, setIsEditMode] = React.useState(false);
+  const [currentCategory, setCurrentCategory] = React.useState<
+    Partial<Category>
+  >({});
 
   // Update local state when prop changes (e.g. after revalidate)
   React.useEffect(() => {
-    setCategories(initialCategories)
-  }, [initialCategories])
+    setCategories(initialCategories);
+  }, [initialCategories]);
 
   React.useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(STORAGE_KEY)
+      const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as StoredState
-        if (typeof parsed.query === 'string') setQuery(parsed.query)
-        if (parsed.pole) setPole(parsed.pole)
-        if (typeof parsed.selectedId === 'string' || parsed.selectedId === null) {
-          setSelectedId(parsed.selectedId)
+        const parsed = JSON.parse(raw) as StoredState;
+        if (typeof parsed.query === "string") setQuery(parsed.query);
+        if (parsed.pole) setPole(parsed.pole);
+        if (
+          typeof parsed.selectedId === "string" ||
+          parsed.selectedId === null
+        ) {
+          setSelectedId(parsed.selectedId);
         }
       }
     } catch {
       // ignore localStorage / parsing errors
     }
-  }, [])
+  }, []);
 
   const filtered = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim().toLowerCase();
 
     return categories
-      .filter((c) => (pole === 'all' ? true : c.pole === pole))
+      .filter((c) => (pole === "all" ? true : c.pole === pole))
       .filter((c) => {
-        if (!q) return true
+        if (!q) return true;
         const hay =
-          `${c.name} ${c.pole} ${c.teams_label || ''} ${c.age_range_label || ''} ${(c.lead_staff || []).map((s) => s.name).join(' ')}`.toLowerCase()
-        return hay.includes(q)
+          `${c.name} ${c.pole} ${c.teams_label || ""} ${c.age_range_label || ""} ${(c.lead_staff || []).map((s) => s.name).join(" ")}`.toLowerCase();
+        return hay.includes(q);
       })
-      .sort((a, b) => a.name.localeCompare(b.name))
-  }, [categories, pole, query])
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [categories, pole, query]);
 
   const selectedCategory = React.useMemo(() => {
-    return filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null
-  }, [filtered, selectedId])
+    return filtered.find((c) => c.id === selectedId) ?? filtered[0] ?? null;
+  }, [filtered, selectedId]);
 
   React.useEffect(() => {
     if (filtered.length === 0) {
-      setSelectedId(null)
-      return
+      setSelectedId(null);
+      return;
     }
 
     if (!selectedId || !filtered.some((c) => c.id === selectedId)) {
-      setSelectedId(filtered[0].id)
+      setSelectedId(filtered[0].id);
     }
-  }, [filtered, selectedId])
+  }, [filtered, selectedId]);
 
   React.useEffect(() => {
-    const payload: StoredState = { query, pole, selectedId }
+    const payload: StoredState = { query, pole, selectedId };
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       // ignore
     }
-  }, [pole, query, selectedId])
+  }, [pole, query, selectedId]);
 
   const stats = React.useMemo(() => {
     return filtered.reduce(
       (acc, c) => {
-        acc.categories += 1
-        acc.teams += c.teams_count || 0
-        acc.players += c.players_estimate || 0
-        if ((c.lead_staff || []).some((s) => s.role === 'resp-categorie')) acc.withOwner += 1
-        return acc
+        acc.categories += 1;
+        acc.teams += c.teams_count || 0;
+        acc.players += c.players_estimate || 0;
+        if ((c.lead_staff || []).some((s) => s.role === "resp-categorie"))
+          acc.withOwner += 1;
+        return acc;
       },
-      { categories: 0, teams: 0, players: 0, withOwner: 0 }
-    )
-  }, [filtered])
+      { categories: 0, teams: 0, players: 0, withOwner: 0 },
+    );
+  }, [filtered]);
 
   const handleCreate = () => {
-    setCurrentCategory({})
-    setIsEditMode(false)
-    setIsModalOpen(true)
-  }
+    setCurrentCategory({});
+    setIsEditMode(false);
+    setIsModalOpen(true);
+  };
 
   const handleEdit = (category: Category) => {
-    setCurrentCategory(category)
-    setIsEditMode(true)
-    setIsModalOpen(true)
-  }
+    setCurrentCategory(category);
+    setIsEditMode(true);
+    setIsModalOpen(true);
+  };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?')) {
-      await deleteCategory(id)
-      router.refresh()
+    if (confirm("Êtes-vous sûr de vouloir supprimer cette catégorie ?")) {
+      await deleteCategory(id);
+      router.refresh();
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const formData = new FormData(e.target as HTMLFormElement)
+    e.preventDefault();
+    const formData = new FormData(e.target as HTMLFormElement);
 
     try {
       if (isEditMode && currentCategory.id) {
-        await updateCategory(currentCategory.id, formData)
+        await updateCategory(currentCategory.id, formData);
       } else {
-        await createCategory(formData)
+        await createCategory(formData);
       }
-      setIsModalOpen(false)
-      router.refresh()
+      setIsModalOpen(false);
+      router.refresh();
     } catch {
-      alert('Une erreur est survenue.')
+      alert("Une erreur est survenue.");
     }
-  }
+  };
 
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.6em] text-white/60">Module</p>
+          <p className="text-xs uppercase tracking-[0.6em] text-white/60">
+            Module
+          </p>
           <h2 className="mt-3 font-[var(--font-teko)] text-3xl font-black tracking-[0.06em] text-white md:text-4xl">
             Catégories
           </h2>
           <p className="mt-2 max-w-3xl text-sm text-white/70">
-            Vue “staff” des catégories (U6→U18, seniors…) avec responsables, volumes
-            (équipes/joueurs) et notes.
+            Vue “staff” des catégories (U6→U18, seniors…) avec responsables,
+            volumes (équipes/joueurs) et notes.
           </p>
         </div>
         {canWrite ? <Button onClick={handleCreate}>+ Ajouter</Button> : null}
@@ -274,8 +302,8 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                 size="sm"
                 variant="secondary"
                 onClick={() => {
-                  setQuery('')
-                  setPole('all')
+                  setQuery("");
+                  setPole("all");
                 }}
               >
                 Réinitialiser
@@ -289,12 +317,16 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
         <Card className="premium-card card-shell rounded-3xl">
           <CardHeader>
             <CardTitle>Liste</CardTitle>
-            <CardDescription>Sélectionnez une catégorie pour afficher la fiche.</CardDescription>
+            <CardDescription>
+              Sélectionnez une catégorie pour afficher la fiche.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-semibold text-white">Aucune catégorie</p>
+                <p className="text-sm font-semibold text-white">
+                  Aucune catégorie
+                </p>
                 <p className="mt-1 text-sm text-white/65">
                   Essayez de modifier le pôle ou la recherche.
                 </p>
@@ -302,7 +334,7 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
             ) : (
               <ul className="grid gap-3">
                 {filtered.map((c) => {
-                  const isSelected = c.id === selectedCategory?.id
+                  const isSelected = c.id === selectedCategory?.id;
                   return (
                     <li key={c.id}>
                       <button
@@ -310,20 +342,24 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                         onClick={() => setSelectedId(c.id)}
                         className={`group w-full rounded-2xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
                           isSelected
-                            ? 'border-white/25 bg-white/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7'
+                            ? "border-white/25 bg-white/10"
+                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7"
                         }`}
-                        aria-current={isSelected ? 'true' : undefined}
+                        aria-current={isSelected ? "true" : undefined}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-white">{c.name}</p>
+                            <p className="truncate font-semibold text-white">
+                              {c.name}
+                            </p>
                             <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/55">
                               {c.pole} • {c.age_range_label}
                             </p>
                           </div>
                           <div className="shrink-0 text-right">
-                            <p className="text-sm font-semibold text-white">{c.teams_count}</p>
+                            <p className="text-sm font-semibold text-white">
+                              {c.teams_count}
+                            </p>
                             <p className="text-xs text-white/45">équipes</p>
                           </div>
                         </div>
@@ -334,7 +370,7 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                         </div>
                       </button>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             )}
@@ -344,12 +380,16 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
         <Card className="premium-card card-shell rounded-3xl">
           <CardHeader>
             <CardTitle>Fiche</CardTitle>
-            <CardDescription>Résumé + responsables + actions futures.</CardDescription>
+            <CardDescription>
+              Résumé + responsables + actions futures.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {!selectedCategory ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <p className="text-sm font-semibold text-white">Aucune sélection</p>
+                <p className="text-sm font-semibold text-white">
+                  Aucune sélection
+                </p>
                 <p className="mt-1 text-sm text-white/65">
                   Choisissez une catégorie dans la liste.
                 </p>
@@ -358,10 +398,15 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
               <div className="grid gap-4">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-white/55">Catégorie</p>
-                    <p className="mt-2 text-lg font-semibold text-white">{selectedCategory.name}</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                      Catégorie
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {selectedCategory.name}
+                    </p>
                     <p className="mt-1 text-sm text-white/70">
-                      {selectedCategory.pole} • {selectedCategory.age_range_label}
+                      {selectedCategory.pole} •{" "}
+                      {selectedCategory.age_range_label}
                     </p>
                   </div>
                   {canWrite ? (
@@ -386,7 +431,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-white/55">Périmètre</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                    Périmètre
+                  </p>
                   <dl className="mt-3 grid gap-3">
                     <div className="flex items-start justify-between gap-4">
                       <dt className="text-sm text-white/65">Équipes</dt>
@@ -404,14 +451,23 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.35em] text-white/55">Responsables</p>
+                  <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                    Responsables
+                  </p>
                   {(selectedCategory.lead_staff || []).length === 0 ? (
-                    <p className="mt-2 text-sm text-white/65">Aucun responsable défini.</p>
+                    <p className="mt-2 text-sm text-white/65">
+                      Aucun responsable défini.
+                    </p>
                   ) : (
                     <ul className="mt-3 grid gap-2">
                       {(selectedCategory.lead_staff || []).map((s) => (
-                        <li key={s.id} className="flex items-start justify-between gap-3">
-                          <span className="text-sm font-semibold text-white">{s.name}</span>
+                        <li
+                          key={s.id}
+                          className="flex items-start justify-between gap-3"
+                        >
+                          <span className="text-sm font-semibold text-white">
+                            {s.name}
+                          </span>
                           <span className="rounded-full border border-white/15 bg-black/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-white/60">
                             {roleLabel(s.role)}
                           </span>
@@ -423,8 +479,12 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
 
                 {selectedCategory.notes ? (
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                    <p className="text-xs uppercase tracking-[0.35em] text-white/55">Note</p>
-                    <p className="mt-2 text-sm text-white/70">{selectedCategory.notes}</p>
+                    <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                      Note
+                    </p>
+                    <p className="mt-2 text-sm text-white/70">
+                      {selectedCategory.notes}
+                    </p>
                   </div>
                 ) : null}
 
@@ -453,7 +513,7 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={isEditMode ? 'Modifier la catégorie' : 'Ajouter une catégorie'}
+        title={isEditMode ? "Modifier la catégorie" : "Ajouter une catégorie"}
         description="Remplissez les informations ci-dessous."
       >
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -482,7 +542,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-black">Années (label)</label>
+            <label className="block text-sm font-medium text-black">
+              Années (label)
+            </label>
             <input
               name="age_range_label"
               defaultValue={currentCategory.age_range_label}
@@ -491,7 +553,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black">Équipes (label)</label>
+            <label className="block text-sm font-medium text-black">
+              Équipes (label)
+            </label>
             <input
               name="teams_label"
               defaultValue={currentCategory.teams_label}
@@ -501,7 +565,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black">Nb Équipes</label>
+              <label className="block text-sm font-medium text-black">
+                Nb Équipes
+              </label>
               <input
                 name="teams_count"
                 type="number"
@@ -510,7 +576,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black">Nb Joueurs (est.)</label>
+              <label className="block text-sm font-medium text-black">
+                Nb Joueurs (est.)
+              </label>
               <input
                 name="players_estimate"
                 type="number"
@@ -520,7 +588,9 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-black">Notes</label>
+            <label className="block text-sm font-medium text-black">
+              Notes
+            </label>
             <textarea
               name="notes"
               defaultValue={currentCategory.notes}
@@ -528,13 +598,19 @@ export default function CategoriesClient({ initialCategories }: { initialCategor
             />
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setIsModalOpen(false)}
+            >
               Annuler
             </Button>
-            <Button type="submit">{isEditMode ? 'Enregistrer' : 'Créer'}</Button>
+            <Button type="submit">
+              {isEditMode ? "Enregistrer" : "Créer"}
+            </Button>
           </div>
         </form>
       </Modal>
     </div>
-  )
+  );
 }

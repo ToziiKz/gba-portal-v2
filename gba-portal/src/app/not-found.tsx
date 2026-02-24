@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from "next/link";
 
 export default function NotFound() {
   return (
@@ -8,8 +8,8 @@ export default function NotFound() {
         Page introuvable
       </h1>
       <p className="mt-4 max-w-xl text-sm text-white/70">
-        Cette page n’existe pas (ou a été déplacée). Retour à l’accueil ou connexion à l’espace
-        staff.
+        Cette page n’existe pas (ou a été déplacée). Retour à l’accueil ou
+        connexion à l’espace staff.
       </p>
 
       <div className="mt-10 flex flex-col gap-4 sm:flex-row">
@@ -27,5 +27,5 @@ export default function NotFound() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

@@ -1,55 +1,55 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
-import { createTeam } from '@/app/dashboard/equipes/actions'
+import * as React from "react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { createTeam } from "@/app/dashboard/equipes/actions";
 
 interface Props {
-  isOpen: boolean
-  onClose: () => void
-  onCreated?: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated?: () => void;
 }
 
 const categories = [
-  'U6',
-  'U7',
-  'U8',
-  'U9',
-  'U10',
-  'U11',
-  'U12',
-  'U13',
-  'U14',
-  'U15',
-  'U16',
-  'U17',
-  'U18',
-  'Seniors',
-  'Veterans',
-]
+  "U6",
+  "U7",
+  "U8",
+  "U9",
+  "U10",
+  "U11",
+  "U12",
+  "U13",
+  "U14",
+  "U15",
+  "U16",
+  "U17",
+  "U18",
+  "Seniors",
+  "Veterans",
+];
 
 export function CreateTeamModal({ isOpen, onClose, onCreated }: Props) {
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const result = await createTeam(null, formData)
+      const result = await createTeam(null, formData);
 
       if (result?.success) {
-        onClose()
-        onCreated?.()
+        onClose();
+        onCreated?.();
       } else {
-        setError(result?.message || 'Erreur inconnue')
+        setError(result?.message || "Erreur inconnue");
       }
     } catch {
-      setError('Erreur technique lors de la création')
+      setError("Erreur technique lors de la création");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -68,7 +68,10 @@ export function CreateTeamModal({ isOpen, onClose, onCreated }: Props) {
         )}
 
         <div className="space-y-2">
-          <label htmlFor="name" className="text-xs uppercase tracking-widest text-white/50">
+          <label
+            htmlFor="name"
+            className="text-xs uppercase tracking-widest text-white/50"
+          >
             Nom de l'équipe
           </label>
           <input
@@ -82,7 +85,10 @@ export function CreateTeamModal({ isOpen, onClose, onCreated }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label htmlFor="category" className="text-xs uppercase tracking-widest text-white/50">
+            <label
+              htmlFor="category"
+              className="text-xs uppercase tracking-widest text-white/50"
+            >
               Catégorie
             </label>
             <select
@@ -99,7 +105,10 @@ export function CreateTeamModal({ isOpen, onClose, onCreated }: Props) {
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="gender" className="text-xs uppercase tracking-widest text-white/50">
+            <label
+              htmlFor="gender"
+              className="text-xs uppercase tracking-widest text-white/50"
+            >
               Genre
             </label>
             <select
@@ -115,14 +124,19 @@ export function CreateTeamModal({ isOpen, onClose, onCreated }: Props) {
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} disabled={loading} type="button">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={loading}
+            type="button"
+          >
             Annuler
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Création...' : "Créer l'équipe"}
+            {loading ? "Création..." : "Créer l'équipe"}
           </Button>
         </div>
       </form>
     </Modal>
-  )
+  );
 }

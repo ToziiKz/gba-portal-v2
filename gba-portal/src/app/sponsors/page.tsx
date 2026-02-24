@@ -1,43 +1,56 @@
-import { CONTACT_EMAIL, SPONSORS_LIST } from '@/lib/site-content'
-import type { Metadata } from 'next'
-import Image from 'next/image'
+import { CONTACT_EMAIL, SPONSORS_LIST } from "@/lib/site-content";
+import type { Metadata } from "next";
+import Image from "next/image";
 
 const stats = [
-  { label: 'Licenciés', value: '350+', sub: 'École de foot → Seniors' },
-  { label: 'Équipes', value: '20+', sub: 'Féminines & Masculines' },
-  { label: 'Matchs / an', value: '450+', sub: 'Une visibilité constante' },
-  { label: 'Territoire', value: '2 Vallées', sub: 'Bruche & Ackerland' },
-]
+  { label: "Licenciés", value: "350+", sub: "École de foot → Seniors" },
+  { label: "Équipes", value: "20+", sub: "Féminines & Masculines" },
+  { label: "Matchs / an", value: "450+", sub: "Une visibilité constante" },
+  { label: "Territoire", value: "2 Vallées", sub: "Bruche & Ackerland" },
+];
 
 const tiers = [
   {
-    name: 'Partenaire Club',
-    price: 'Dès 300€',
-    tagline: 'Soutenez la formation locale',
-    perks: ['Logo sur le site officiel', 'Accès aux événements club', 'Attestation de mécénat'],
-    color: 'border-white/10',
+    name: "Partenaire Club",
+    price: "Dès 300€",
+    tagline: "Soutenez la formation locale",
+    perks: [
+      "Logo sur le site officiel",
+      "Accès aux événements club",
+      "Attestation de mécénat",
+    ],
+    color: "border-white/10",
   },
   {
-    name: 'Partenaire Officiel',
-    price: 'Dès 800€',
-    tagline: 'Une visibilité terrain & digitale',
-    perks: ['Logo sur équipements', 'Relais réseaux sociaux', 'Panneau stade (option)'],
+    name: "Partenaire Officiel",
+    price: "Dès 800€",
+    tagline: "Une visibilité terrain & digitale",
+    perks: [
+      "Logo sur équipements",
+      "Relais réseaux sociaux",
+      "Panneau stade (option)",
+    ],
     featured: true,
-    color: 'border-cyan-500/30',
+    color: "border-cyan-500/30",
   },
   {
-    name: 'Partenaire Majeur',
-    price: 'Sur Mesure',
-    tagline: 'Le GBA au cœur de votre marque',
-    perks: ['Naming / Sponsoring maillot', 'Contenus vidéo dédiés', 'Reporting annuel'],
-    color: 'border-amber-500/30',
+    name: "Partenaire Majeur",
+    price: "Sur Mesure",
+    tagline: "Le GBA au cœur de votre marque",
+    perks: [
+      "Naming / Sponsoring maillot",
+      "Contenus vidéo dédiés",
+      "Reporting annuel",
+    ],
+    color: "border-amber-500/30",
   },
-]
+];
 
 export const metadata: Metadata = {
-  title: 'Sponsors — ESPACE GBA',
-  description: 'Devenez partenaire du Groupement Bruche Ackerland et soutenez le football local.',
-}
+  title: "Sponsors — ESPACE GBA",
+  description:
+    "Devenez partenaire du Groupement Bruche Ackerland et soutenez le football local.",
+};
 
 export default function SponsorsPage() {
   return (
@@ -60,8 +73,9 @@ export default function SponsorsPage() {
           </h1>
           <div className="mt-12 flex flex-col md:flex-row gap-12 items-start">
             <p className="max-w-xl text-xl text-white/60 leading-relaxed">
-              Associez votre entreprise à un projet qui forme les citoyens de demain. Le GBA offre
-              une visibilité unique au cœur de la Bruche et de l&apos;Ackerland.
+              Associez votre entreprise à un projet qui forme les citoyens de
+              demain. Le GBA offre une visibilité unique au cœur de la Bruche et
+              de l&apos;Ackerland.
             </p>
             <div className="flex gap-4">
               <a
@@ -87,7 +101,9 @@ export default function SponsorsPage() {
                 <div className="text-xs font-bold uppercase tracking-[0.2em] text-white/30 mt-2">
                   {stat.label}
                 </div>
-                <div className="text-[10px] text-white/20 mt-1 uppercase">{stat.sub}</div>
+                <div className="text-[10px] text-white/20 mt-1 uppercase">
+                  {stat.sub}
+                </div>
               </div>
             ))}
           </div>
@@ -126,7 +142,10 @@ export default function SponsorsPage() {
                 </div>
                 <ul className="space-y-4 mb-12 flex-1">
                   {tier.perks.map((perk) => (
-                    <li key={perk} className="flex items-center gap-3 text-sm text-white/60">
+                    <li
+                      key={perk}
+                      className="flex items-center gap-3 text-sm text-white/60"
+                    >
                       <span className="h-1 w-1 rounded-full bg-cyan-400" />
                       {perk}
                     </li>
@@ -156,7 +175,7 @@ export default function SponsorsPage() {
                 key={partner.name}
                 className="group relative aspect-square flex items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] p-6 grayscale transition-all hover:grayscale-0 hover:border-white/20"
               >
-                {'logoUrl' in partner && partner.logoUrl ? (
+                {"logoUrl" in partner && partner.logoUrl ? (
                   <div className="relative h-full w-full">
                     <Image
                       src={partner.logoUrl as string}
@@ -177,14 +196,19 @@ export default function SponsorsPage() {
       </section>
 
       {/* Contact CTA */}
-      <section id="contact" className="relative z-10 py-40 px-6 overflow-hidden">
+      <section
+        id="contact"
+        className="relative z-10 py-40 px-6 overflow-hidden"
+      >
         <div className="absolute inset-0 bg-cyan-600/10 pointer-events-none" />
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="font-[family-name:var(--font-teko)] text-6xl font-black uppercase tracking-tight mb-8">
-            Construisons le futur <br className="hidden md:block" /> du football local.
+            Construisons le futur <br className="hidden md:block" /> du football
+            local.
           </h2>
           <p className="text-xl text-white/50 mb-12">
-            Prenons rendez-vous pour discuter de votre visibilité et de votre impact au sein du GBA.
+            Prenons rendez-vous pour discuter de votre visibilité et de votre
+            impact au sein du GBA.
           </p>
           <a
             href={`mailto:${CONTACT_EMAIL}?subject=Partenariat GBA`}
@@ -195,5 +219,5 @@ export default function SponsorsPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

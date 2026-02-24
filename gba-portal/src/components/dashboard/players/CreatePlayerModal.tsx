@@ -1,36 +1,36 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { Modal } from '@/components/ui/Modal'
-import { Button } from '@/components/ui/Button'
-import { createPlayer } from '@/app/dashboard/joueurs/actions'
+import * as React from "react";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { createPlayer } from "@/app/dashboard/joueurs/actions";
 
 interface Props {
-  isOpen: boolean
-  onClose: () => void
-  teams: { id: string; name: string }[]
+  isOpen: boolean;
+  onClose: () => void;
+  teams: { id: string; name: string }[];
 }
 
 export function CreatePlayerModal({ isOpen, onClose, teams }: Props) {
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const result = await createPlayer(null, formData)
+      const result = await createPlayer(null, formData);
 
       if (result?.success) {
-        onClose()
+        onClose();
       } else {
-        setError(result?.message || 'Erreur inconnue')
+        setError(result?.message || "Erreur inconnue");
       }
     } catch {
-      setError('Erreur technique')
+      setError("Erreur technique");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -50,7 +50,10 @@ export function CreatePlayerModal({ isOpen, onClose, teams }: Props) {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label htmlFor="firstName" className="text-xs uppercase tracking-widest text-white/50">
+            <label
+              htmlFor="firstName"
+              className="text-xs uppercase tracking-widest text-white/50"
+            >
               Prénom
             </label>
             <input
@@ -61,7 +64,10 @@ export function CreatePlayerModal({ isOpen, onClose, teams }: Props) {
             />
           </div>
           <div className="space-y-2">
-            <label htmlFor="lastName" className="text-xs uppercase tracking-widest text-white/50">
+            <label
+              htmlFor="lastName"
+              className="text-xs uppercase tracking-widest text-white/50"
+            >
               Nom
             </label>
             <input
@@ -74,7 +80,10 @@ export function CreatePlayerModal({ isOpen, onClose, teams }: Props) {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="teamId" className="text-xs uppercase tracking-widest text-white/50">
+          <label
+            htmlFor="teamId"
+            className="text-xs uppercase tracking-widest text-white/50"
+          >
             Équipe
           </label>
           <select
@@ -93,14 +102,19 @@ export function CreatePlayerModal({ isOpen, onClose, teams }: Props) {
         </div>
 
         <div className="mt-4 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} disabled={loading} type="button">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            disabled={loading}
+            type="button"
+          >
             Annuler
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Création...' : 'Créer'}
+            {loading ? "Création..." : "Créer"}
           </Button>
         </div>
       </form>
     </Modal>
-  )
+  );
 }

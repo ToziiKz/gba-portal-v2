@@ -1,43 +1,45 @@
-'use client'
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import { Teko, Cinzel } from 'next/font/google'
-import { Play } from 'lucide-react'
-import { log } from '@/lib/logger'
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
+import { Teko, Cinzel } from "next/font/google";
+import { Play } from "lucide-react";
+import { log } from "@/lib/logger";
 
 // Optimisation : Chargement des polices (pourrait être déplacé dans layout.tsx plus tard)
-const teko = Teko({ subsets: ['latin'], weight: ['400', '600'] })
-const cinzel = Cinzel({ subsets: ['latin'], weight: ['400', '700'] })
+const teko = Teko({ subsets: ["latin"], weight: ["400", "600"] });
+const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "700"] });
 
 export default function CinematicIntro() {
   const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window === 'undefined') return true
-    return !sessionStorage.getItem('gba_intro_seen')
-  })
-  const [isChecked, setIsChecked] = useState(false)
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+    if (typeof window === "undefined") return true;
+    return !sessionStorage.getItem("gba_intro_seen");
+  });
+  const [isChecked, setIsChecked] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsChecked(true)
-  }, [])
+    setIsChecked(true);
+  }, []);
 
   const handleEnter = () => {
-    sessionStorage.setItem('gba_intro_seen', 'true')
+    sessionStorage.setItem("gba_intro_seen", "true");
 
     if (audioRef.current) {
-      audioRef.current.volume = 1.0
+      audioRef.current.volume = 1.0;
       // Gestion robuste des erreurs de lecture auto (bloquées par les navigateurs parfois)
-      audioRef.current.play().catch((e) => log.warn('Autoplay audio bloqué ou interrompu :', e))
+      audioRef.current
+        .play()
+        .catch((e) => log.warn("Autoplay audio bloqué ou interrompu :", e));
     }
 
-    setIsVisible(false)
-  }
+    setIsVisible(false);
+  };
 
   // Évite un mismatch SSR/CSR (intro dépend de sessionStorage)
-  if (!isChecked) return null
+  if (!isChecked) return null;
 
   return (
     <>
@@ -50,7 +52,7 @@ export default function CinematicIntro() {
             initial={{ opacity: 1 }}
             exit={{
               opacity: 0,
-              transition: { duration: 1.5, ease: 'easeInOut' },
+              transition: { duration: 1.5, ease: "easeInOut" },
             }}
             className="fixed inset-0 z-[9999] bg-[#020202] flex flex-col items-center justify-center overflow-hidden"
           >
@@ -64,9 +66,9 @@ export default function CinematicIntro() {
               animate={{
                 rotate: [35, 45, 35],
                 opacity: [0.15, 0.3, 0.15],
-                x: ['-10%', '0%', '-10%'],
+                x: ["-10%", "0%", "-10%"],
               }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
               className="absolute top-[-50%] left-[-10%] w-[60%] h-[200%] bg-gradient-to-r from-transparent via-[#0065BD]/20 to-transparent blur-[80px]"
             />
 
@@ -75,16 +77,21 @@ export default function CinematicIntro() {
               animate={{
                 rotate: [-35, -45, -35],
                 opacity: [0.1, 0.25, 0.1],
-                x: ['10%', '0%', '10%'],
+                x: ["10%", "0%", "10%"],
               }}
-              transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+              transition={{
+                duration: 15,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 1,
+              }}
               className="absolute top-[-50%] right-[-10%] w-[60%] h-[200%] bg-gradient-to-l from-transparent via-white/5 to-transparent blur-[80px]"
             />
 
             {/* 4. Brume au sol (Ground Fog) */}
             <motion.div
               animate={{ opacity: [0.2, 0.4, 0.2] }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
               className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-[#0065BD]/10 via-transparent to-transparent"
             />
 
@@ -96,7 +103,7 @@ export default function CinematicIntro() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 1, ease: 'easeOut' }}
+                transition={{ delay: 0.3, duration: 1, ease: "easeOut" }}
                 className="mb-16 flex flex-col items-center"
               >
                 <div className="relative w-48 h-48 md:w-64 md:h-64">
@@ -158,5 +165,5 @@ export default function CinematicIntro() {
         )}
       </AnimatePresence>
     </>
-  )
+  );
 }

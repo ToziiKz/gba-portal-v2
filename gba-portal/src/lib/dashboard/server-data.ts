@@ -1,69 +1,78 @@
-import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { getDashboardScope } from '@/lib/dashboard/getDashboardScope'
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { getDashboardScope } from "@/lib/dashboard/getDashboardScope";
 
 // Helper to identify roles with broad access (admin + resps) vs scoped roles (coach)
 function hasGlobalAccess(role: string) {
-  return role === 'admin' || role.startsWith('resp_')
+  return role === "admin" || role.startsWith("resp_");
 }
 
 type TeamLite = {
-  id: string
-  name: string
-  category: string | null
-  pole: string | null
-}
+  id: string;
+  name: string;
+  category: string | null;
+  pole: string | null;
+};
 
 export async function getScopedRosterData() {
-  const supabase = await createClient()
-  const admin = createAdminClient()
-  const scope = await getDashboardScope()
+  const supabase = await createClient();
+  const admin = createAdminClient();
+  const scope = await getDashboardScope();
 
   // Use admin client for global roles to ensure they see everything regardless of strict RLS
-  const db = hasGlobalAccess(scope.role) ? admin : supabase
+  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
-  let teamsQuery = db.from('teams').select('id, name, category, pole').order('name')
+  let teamsQuery = db
+    .from("teams")
+    .select("id, name, category, pole")
+    .order("name");
   let playersQuery = db
-    .from('players')
+    .from("players")
     .select(
-      'id, firstname, lastname, team_id, category, club_name, license_number, mobile_phone, email, gender, status_label, status_start_date, status_end_date, legal_guardian_name, address_street, address_zipcode, address_city'
+      "id, firstname, lastname, team_id, category, club_name, license_number, mobile_phone, email, gender, status_label, status_start_date, status_end_date, legal_guardian_name, address_street, address_zipcode, address_city",
     )
-    .order('lastname')
+    .order("lastname");
 
   if (!hasGlobalAccess(scope.role)) {
     // Restrict to scoped teams for coaches
     if (scope.viewableTeamIds && scope.viewableTeamIds.length > 0) {
-      teamsQuery = teamsQuery.in('id', scope.viewableTeamIds)
-      playersQuery = playersQuery.in('team_id', scope.viewableTeamIds)
+      teamsQuery = teamsQuery.in("id", scope.viewableTeamIds);
+      playersQuery = playersQuery.in("team_id", scope.viewableTeamIds);
     } else {
       // No teams assigned -> return empty
-      teamsQuery = teamsQuery.eq('id', '00000000-0000-0000-0000-000000000000') // Impossible UUID
-      playersQuery = playersQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
+      teamsQuery = teamsQuery.eq("id", "00000000-0000-0000-0000-000000000000"); // Impossible UUID
+      playersQuery = playersQuery.eq(
+        "team_id",
+        "00000000-0000-0000-0000-000000000000",
+      );
     }
   }
 
-  const [{ data: teams }, { data: players }] = await Promise.all([teamsQuery, playersQuery])
+  const [{ data: teams }, { data: players }] = await Promise.all([
+    teamsQuery,
+    playersQuery,
+  ]);
 
   return {
     scope,
     teams: ((teams ?? []) as TeamLite[]).map((t) => ({
       id: String(t.id),
-      name: t.name ?? 'Équipe sans nom',
+      name: t.name ?? "Équipe sans nom",
       category: t.category ?? null,
       pole: t.pole ?? null,
     })),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     players: (players ?? []) as any[],
-  }
+  };
 }
 
 export async function getScopedPlanningData() {
-  const supabase = await createClient()
-  const admin = createAdminClient()
-  const scope = await getDashboardScope()
+  const supabase = await createClient();
+  const admin = createAdminClient();
+  const scope = await getDashboardScope();
 
-  const db = hasGlobalAccess(scope.role) ? admin : supabase
+  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
-  let sessionsQuery = db.from('planning_sessions').select(
+  let sessionsQuery = db.from("planning_sessions").select(
     `
       id,
       day,
@@ -79,32 +88,42 @@ export async function getScopedPlanningData() {
         name,
         category
       )
-    `
-  )
+    `,
+  );
 
-  let teamsQuery = db.from('teams').select('id, name, category, pole').order('category')
+  let teamsQuery = db
+    .from("teams")
+    .select("id, name, category, pole")
+    .order("category");
 
   if (!hasGlobalAccess(scope.role)) {
     if (scope.viewableTeamIds && scope.viewableTeamIds.length > 0) {
-      sessionsQuery = sessionsQuery.in('team_id', scope.viewableTeamIds)
-      teamsQuery = teamsQuery.in('id', scope.viewableTeamIds)
+      sessionsQuery = sessionsQuery.in("team_id", scope.viewableTeamIds);
+      teamsQuery = teamsQuery.in("id", scope.viewableTeamIds);
     } else {
-      sessionsQuery = sessionsQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
-      teamsQuery = teamsQuery.eq('id', '00000000-0000-0000-0000-000000000000')
+      sessionsQuery = sessionsQuery.eq(
+        "team_id",
+        "00000000-0000-0000-0000-000000000000",
+      );
+      teamsQuery = teamsQuery.eq("id", "00000000-0000-0000-0000-000000000000");
     }
   }
 
-  const [sessionsResult, teamsResult] = await Promise.all([sessionsQuery, teamsQuery])
-  let sessions = sessionsResult.data
-  const sessionsError = sessionsResult.error
-  const teams = teamsResult.data
+  const [sessionsResult, teamsResult] = await Promise.all([
+    sessionsQuery,
+    teamsQuery,
+  ]);
+  let sessions = sessionsResult.data;
+  const sessionsError = sessionsResult.error;
+  const teams = teamsResult.data;
 
   // Backward compatibility check for session_date
   if (
     sessionsError &&
-    (sessionsError.message?.includes('session_date') || sessionsError.code === 'PGRST204')
+    (sessionsError.message?.includes("session_date") ||
+      sessionsError.code === "PGRST204")
   ) {
-    let legacySessionsQuery = db.from('planning_sessions').select(
+    let legacySessionsQuery = db.from("planning_sessions").select(
       `
         id,
         day,
@@ -119,49 +138,60 @@ export async function getScopedPlanningData() {
           name,
           category
         )
-      `
-    )
+      `,
+    );
 
     if (!hasGlobalAccess(scope.role)) {
       if (scope.viewableTeamIds && scope.viewableTeamIds.length > 0) {
-        legacySessionsQuery = legacySessionsQuery.in('team_id', scope.viewableTeamIds)
+        legacySessionsQuery = legacySessionsQuery.in(
+          "team_id",
+          scope.viewableTeamIds,
+        );
       } else {
-        legacySessionsQuery = legacySessionsQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
+        legacySessionsQuery = legacySessionsQuery.eq(
+          "team_id",
+          "00000000-0000-0000-0000-000000000000",
+        );
       }
     }
 
-    const { data: legacySessions } = await legacySessionsQuery
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sessions = legacySessions as any
+    const { data: legacySessions } = await legacySessionsQuery;
+
+    sessions = legacySessions as any;
   }
 
   return {
     scope,
     teams: (teams ?? []) as TeamLite[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     sessions: ((sessions ?? []) as any[]).map((s) => ({
       ...s,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       team: Array.isArray(s.team) ? (s.team[0] ?? null) : s.team,
     })),
-  }
+  };
 }
 
 export async function getDashboardHomeData() {
-  const supabase = await createClient()
-  const admin = createAdminClient()
-  const scope = await getDashboardScope()
+  const supabase = await createClient();
+  const admin = createAdminClient();
+  const scope = await getDashboardScope();
 
-  const db = hasGlobalAccess(scope.role) ? admin : supabase
+  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let teamsCountQuery = db.from('teams').select('*', { count: 'exact', head: true })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let playersCountQuery = db.from('players').select('*', { count: 'exact', head: true })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let sessionsCountQuery = db.from('planning_sessions').select('*', { count: 'exact', head: true })
+  let teamsCountQuery = db
+    .from("teams")
+    .select("*", { count: "exact", head: true });
 
-  let sessionsQuery = db.from('planning_sessions').select(
+  let playersCountQuery = db
+    .from("players")
+    .select("*", { count: "exact", head: true });
+
+  let sessionsCountQuery = db
+    .from("planning_sessions")
+    .select("*", { count: "exact", head: true });
+
+  let sessionsQuery = db.from("planning_sessions").select(
     `
       id,
       day,
@@ -172,20 +202,38 @@ export async function getDashboardHomeData() {
         id,
         name
       )
-    `
-  )
+    `,
+  );
 
   if (!hasGlobalAccess(scope.role)) {
     if (scope.viewableTeamIds && scope.viewableTeamIds.length > 0) {
-      teamsCountQuery = teamsCountQuery.in('id', scope.viewableTeamIds)
-      playersCountQuery = playersCountQuery.in('team_id', scope.viewableTeamIds)
-      sessionsCountQuery = sessionsCountQuery.in('team_id', scope.viewableTeamIds)
-      sessionsQuery = sessionsQuery.in('team_id', scope.viewableTeamIds)
+      teamsCountQuery = teamsCountQuery.in("id", scope.viewableTeamIds);
+      playersCountQuery = playersCountQuery.in(
+        "team_id",
+        scope.viewableTeamIds,
+      );
+      sessionsCountQuery = sessionsCountQuery.in(
+        "team_id",
+        scope.viewableTeamIds,
+      );
+      sessionsQuery = sessionsQuery.in("team_id", scope.viewableTeamIds);
     } else {
-      teamsCountQuery = teamsCountQuery.eq('id', '00000000-0000-0000-0000-000000000000')
-      playersCountQuery = playersCountQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
-      sessionsCountQuery = sessionsCountQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
-      sessionsQuery = sessionsQuery.eq('team_id', '00000000-0000-0000-0000-000000000000')
+      teamsCountQuery = teamsCountQuery.eq(
+        "id",
+        "00000000-0000-0000-0000-000000000000",
+      );
+      playersCountQuery = playersCountQuery.eq(
+        "team_id",
+        "00000000-0000-0000-0000-000000000000",
+      );
+      sessionsCountQuery = sessionsCountQuery.eq(
+        "team_id",
+        "00000000-0000-0000-0000-000000000000",
+      );
+      sessionsQuery = sessionsQuery.eq(
+        "team_id",
+        "00000000-0000-0000-0000-000000000000",
+      );
     }
   }
 
@@ -194,18 +242,22 @@ export async function getDashboardHomeData() {
     { count: playerCount },
     { count: sessionsCount },
     { data: sessions },
-  ] = await Promise.all([teamsCountQuery, playersCountQuery, sessionsCountQuery, sessionsQuery])
+  ] = await Promise.all([
+    teamsCountQuery,
+    playersCountQuery,
+    sessionsCountQuery,
+    sessionsQuery,
+  ]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const normalizedSessions = ((sessions ?? []) as any[]).map((row) => ({
     id: String(row.id),
     day: row.day ?? null,
     start_time: row.start_time ?? null,
     end_time: row.end_time ?? null,
     location: row.location ?? null,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     team: Array.isArray(row.team) ? (row.team[0] ?? null) : row.team,
-  }))
+  }));
 
   return {
     scope,
@@ -213,5 +265,5 @@ export async function getDashboardHomeData() {
     playerCount: playerCount ?? 0,
     sessionsCount: sessionsCount ?? 0,
     sessions: normalizedSessions,
-  }
+  };
 }

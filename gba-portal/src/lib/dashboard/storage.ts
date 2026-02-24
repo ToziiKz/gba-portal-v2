@@ -1,18 +1,18 @@
 export function safeJsonParse<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback
+  if (!value) return fallback;
   try {
-    return JSON.parse(value) as T
+    return JSON.parse(value) as T;
   } catch {
-    return fallback
+    return fallback;
   }
 }
 
 export function readLocal<T>(key: string, fallback: T): T {
-  if (typeof window === 'undefined') return fallback
-  return safeJsonParse(window.localStorage.getItem(key), fallback)
+  if (typeof window === "undefined") return fallback;
+  return safeJsonParse(window.localStorage.getItem(key), fallback);
 }
 
 export function writeLocal<T>(key: string, value: T) {
-  if (typeof window === 'undefined') return
-  window.localStorage.setItem(key, JSON.stringify(value))
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(key, JSON.stringify(value));
 }

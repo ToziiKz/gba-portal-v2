@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 
 export function SoccerField() {
   return (
@@ -44,20 +44,28 @@ export function SoccerField() {
         <div className="flex items-center justify-center">{/* Slot GK */}</div>
 
         {/* Ligne 2 : Défenseurs Centraux */}
-        <div className="flex items-center justify-around px-8">{/* Slot DC G / D */}</div>
+        <div className="flex items-center justify-around px-8">
+          {/* Slot DC G / D */}
+        </div>
 
         {/* Ligne 3 : Latéraux / Milieux Déf */}
-        <div className="flex items-center justify-between px-2">{/* Slot Latéral G / D */}</div>
+        <div className="flex items-center justify-between px-2">
+          {/* Slot Latéral G / D */}
+        </div>
 
         {/* Ligne 4 : Milieux */}
-        <div className="flex items-center justify-around px-12">{/* Slot MC */}</div>
+        <div className="flex items-center justify-around px-12">
+          {/* Slot MC */}
+        </div>
 
         {/* Ligne 5 : Attaquants Soutien / Ailiers */}
-        <div className="flex items-center justify-between px-6">{/* Slot MO / Ailier */}</div>
+        <div className="flex items-center justify-between px-6">
+          {/* Slot MO / Ailier */}
+        </div>
 
         {/* Ligne 6 : Buteur */}
         <div className="flex items-center justify-center">{/* Slot BU */}</div>
       </div>
     </div>
-  )
+  );
 }

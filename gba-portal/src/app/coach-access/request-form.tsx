@@ -1,23 +1,27 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useActionState } from 'react'
+import * as React from "react";
+import { useActionState } from "react";
 
-import { submitCoachAccessRequest } from './actions'
-import { Button } from '@/components/ui/Button'
+import { submitCoachAccessRequest } from "./actions";
+import { Button } from "@/components/ui/Button";
 
-type ActionState = { ok: boolean; error?: string }
+type ActionState = { ok: boolean; error?: string };
 
-const initialState: ActionState = { ok: false }
+const initialState: ActionState = { ok: false };
 
 export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
-  const [state, formAction, isPending] = useActionState(submitCoachAccessRequest, initialState)
+  const [state, formAction, isPending] = useActionState(
+    submitCoachAccessRequest,
+    initialState,
+  );
 
   return (
     <form action={formAction} className="grid gap-4">
       {state.ok ? (
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-100">
-          Demande envoyée. Un admin va la valider avant envoi du lien d’activation.
+          Demande envoyée. Un admin va la valider avant envoi du lien
+          d’activation.
         </div>
       ) : null}
 
@@ -28,7 +32,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
       ) : null}
 
       <label className="grid gap-2">
-        <span className="text-xs uppercase tracking-widest text-white/60">Nom complet *</span>
+        <span className="text-xs uppercase tracking-widest text-white/60">
+          Nom complet *
+        </span>
         <input
           name="fullName"
           required
@@ -38,7 +44,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-xs uppercase tracking-widest text-white/60">Email *</span>
+        <span className="text-xs uppercase tracking-widest text-white/60">
+          Email *
+        </span>
         <input
           name="email"
           type="email"
@@ -49,7 +57,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-xs uppercase tracking-widest text-white/60">Téléphone</span>
+        <span className="text-xs uppercase tracking-widest text-white/60">
+          Téléphone
+        </span>
         <input
           name="phone"
           className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white/85 outline-none placeholder:text-white/30 focus:border-white/30 focus:ring-2 focus:ring-[#00A1FF]"
@@ -58,7 +68,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-xs uppercase tracking-widest text-white/60">Équipe souhaitée</span>
+        <span className="text-xs uppercase tracking-widest text-white/60">
+          Équipe souhaitée
+        </span>
         <select
           name="requestedTeam"
           defaultValue=""
@@ -66,7 +78,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
           className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white/85 outline-none focus:border-white/30 focus:ring-2 focus:ring-[#00A1FF] disabled:opacity-60"
         >
           <option value="">
-            {teamOptions.length === 0 ? 'Aucune équipe disponible' : 'Sélectionner une équipe'}
+            {teamOptions.length === 0
+              ? "Aucune équipe disponible"
+              : "Sélectionner une équipe"}
           </option>
           {teamOptions.map((team) => (
             <option key={team} value={team}>
@@ -77,7 +91,9 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
       </label>
 
       <label className="grid gap-2">
-        <span className="text-xs uppercase tracking-widest text-white/60">Message (optionnel)</span>
+        <span className="text-xs uppercase tracking-widest text-white/60">
+          Message (optionnel)
+        </span>
         <textarea
           name="message"
           rows={4}
@@ -91,8 +107,8 @@ export function CoachAccessForm({ teamOptions }: { teamOptions: string[] }) {
         disabled={isPending}
         className="mt-2 w-full rounded-full bg-gradient-to-r from-[#00a1ff] to-[#0065bd] py-6 text-base font-bold shadow-[0_15px_50px_rgba(0,161,255,0.45)] hover:opacity-90"
       >
-        {isPending ? 'Envoi...' : 'Envoyer la demande'}
+        {isPending ? "Envoi..." : "Envoyer la demande"}
       </Button>
     </form>
-  )
+  );
 }

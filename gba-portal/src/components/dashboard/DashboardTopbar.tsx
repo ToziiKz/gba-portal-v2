@@ -1,41 +1,41 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
-import { Search, Menu, User, LogOut, Globe, Bell, Command } from 'lucide-react'
+import * as React from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
+import { Search, Menu, User, LogOut, Globe, Bell, Command } from "lucide-react";
 
-import { getNavLabelForPath } from '@/lib/dashboard/nav'
-import { useDashboardScope } from '@/components/dashboard/DashboardScopeProvider'
-import type { DashboardRole } from '@/lib/dashboardRole'
+import { getNavLabelForPath } from "@/lib/dashboard/nav";
+import { useDashboardScope } from "@/components/dashboard/DashboardScopeProvider";
+import type { DashboardRole } from "@/lib/dashboardRole";
 
 type Props = {
-  role: DashboardRole
-  userName?: string
-  userEmail?: string
-  onOpenSpotlight: () => void
-}
+  role: DashboardRole;
+  userName?: string;
+  userEmail?: string;
+  onOpenSpotlight: () => void;
+};
 
-export function DashboardTopbar({ role, userName, userEmail: _userEmail, onOpenSpotlight }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const title = React.useMemo(() => getNavLabelForPath(pathname), [pathname])
-  const scope = useDashboardScope()
+export function DashboardTopbar({ role, userName, onOpenSpotlight }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const title = React.useMemo(() => getNavLabelForPath(pathname), [pathname]);
+  const scope = useDashboardScope();
 
   const assignedTeamsLabel = React.useMemo(() => {
-    if (role !== 'coach') return null
-    if (!scope.assignedTeams || scope.assignedTeams.length === 0) return null
-    const primary = scope.assignedTeams[0]
-    const extra = scope.assignedTeams.length - 1
-    return extra > 0 ? `${primary.name} +${extra}` : primary.name
-  }, [role, scope.assignedTeams])
+    if (role !== "coach") return null;
+    if (!scope.assignedTeams || scope.assignedTeams.length === 0) return null;
+    const primary = scope.assignedTeams[0];
+    const extra = scope.assignedTeams.length - 1;
+    return extra > 0 ? `${primary.name} +${extra}` : primary.name;
+  }, [role, scope.assignedTeams]);
 
   const handleLogout = async () => {
-    const { createClient } = await import('@/lib/supabase/client')
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/login')
-  }
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   return (
     <div className="mb-8 flex items-center justify-between">
@@ -57,16 +57,18 @@ export function DashboardTopbar({ role, userName, userEmail: _userEmail, onOpenS
       {/* Desktop Title Area */}
       <div className="hidden lg:block">
         <div className="flex items-center gap-3 text-slate-400 mb-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">Espace GBA</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.3em]">
+            Espace GBA
+          </span>
           <span className="text-[10px]">/</span>
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">
             {title}
           </span>
         </div>
         <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none font-[var(--font-teko)]">
-          Priorité{' '}
+          Priorité{" "}
           <span className="text-blue-600">
-            {title === 'Dashboard' ? 'au terrain' : title.toLowerCase()}
+            {title === "Dashboard" ? "au terrain" : title.toLowerCase()}
           </span>
         </h1>
       </div>
@@ -98,11 +100,11 @@ export function DashboardTopbar({ role, userName, userEmail: _userEmail, onOpenS
         <div className="flex items-center gap-3 pl-2 md:pl-4 border-l border-slate-100">
           <div className="hidden md:flex flex-col items-end">
             <p className="text-xs font-black text-slate-900 leading-none uppercase tracking-wide">
-              {userName?.split(' ')[0]}
+              {userName?.split(" ")[0]}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <span
-                className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${role === 'admin' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'}`}
+                className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${role === "admin" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}
               >
                 {role}
               </span>
@@ -127,14 +129,18 @@ export function DashboardTopbar({ role, userName, userEmail: _userEmail, onOpenS
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-600"
                 >
                   <Globe className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-widest">Site Public</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">
+                    Site Public
+                  </span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-widest">Déconnexion</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">
+                    Déconnexion
+                  </span>
                 </button>
               </div>
             </div>
@@ -142,5 +148,5 @@ export function DashboardTopbar({ role, userName, userEmail: _userEmail, onOpenS
         </div>
       </div>
     </div>
-  )
+  );
 }

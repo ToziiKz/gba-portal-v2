@@ -1,136 +1,163 @@
-import Link from 'next/link'
-import { Search, UserRound, ArrowUpRight } from 'lucide-react'
+import Link from "next/link";
+import { Search, UserRound, ArrowUpRight } from "lucide-react";
 
-import { getScopedRosterData } from '@/lib/dashboard/server-data'
-import { createAdminClient, createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { getScopedRosterData } from "@/lib/dashboard/server-data";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
 import {
   requestCreatePlayer,
   requestDeletePlayer,
   requestMovePlayer,
   requestUpdatePlayer,
-} from '@/app/dashboard/effectif/actions'
+} from "@/app/dashboard/effectif/actions";
 
 type TeamRow = {
-  id: string
-  name: string
-  category: string | null
-  pole: string | null
-}
+  id: string;
+  name: string;
+  category: string | null;
+  pole: string | null;
+};
 
 type PlayerRow = {
-  id: string
-  firstname: string | null
-  lastname: string | null
-  team_id: string | null
-  category?: string | null
-  club_name?: string | null
-  license_number?: string | null
-  mobile_phone?: string | null
-  email?: string | null
-  gender?: string | null
-  status_label?: string | null
-  legal_guardian_name?: string | null
-  address_street?: string | null
-  address_zipcode?: string | null
-  address_city?: string | null
-}
+  id: string;
+  firstname: string | null;
+  lastname: string | null;
+  team_id: string | null;
+  category?: string | null;
+  club_name?: string | null;
+  license_number?: string | null;
+  mobile_phone?: string | null;
+  email?: string | null;
+  gender?: string | null;
+  status_label?: string | null;
+  legal_guardian_name?: string | null;
+  address_street?: string | null;
+  address_zipcode?: string | null;
+  address_city?: string | null;
+};
 
 function fullName(p: PlayerRow) {
-  return `${p.firstname ?? ''} ${p.lastname ?? ''}`.trim() || 'Joueur sans nom'
+  return `${p.firstname ?? ""} ${p.lastname ?? ""}`.trim() || "Joueur sans nom";
 }
 
 function byName(a: { name: string }, b: { name: string }) {
-  return a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' })
+  return a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
 }
 
 function formatPhone(phone?: string | null) {
-  const raw = (phone ?? '').trim()
-  if (!raw) return '—'
-  const digits = raw.replace(/\D/g, '')
-  if (digits.length === 9 && (digits.startsWith('6') || digits.startsWith('7'))) return `0${digits}`
-  if (digits.length === 11 && digits.startsWith('33') && (digits[2] === '6' || digits[2] === '7'))
-    return `0${digits.slice(2)}`
-  return raw
+  const raw = (phone ?? "").trim();
+  if (!raw) return "—";
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 9 && (digits.startsWith("6") || digits.startsWith("7")))
+    return `0${digits}`;
+  if (
+    digits.length === 11 &&
+    digits.startsWith("33") &&
+    (digits[2] === "6" || digits[2] === "7")
+  )
+    return `0${digits.slice(2)}`;
+  return raw;
 }
 
 export default async function EffectifPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ q?: string }>
+  searchParams?: Promise<{ q?: string }>;
 }) {
-  const params = (await searchParams) ?? {}
-  const q = (params.q ?? '').trim().toLowerCase()
+  const params = (await searchParams) ?? {};
+  const q = (params.q ?? "").trim().toLowerCase();
 
-  const { scope, teams, players } = await getScopedRosterData()
-  const supabase = await createClient()
-  const admin = createAdminClient()
-  const db = scope.role === 'admin' || scope.role.startsWith('resp_') ? admin : supabase
-  const { data: allTeams } = await db.from('teams').select('id, name').order('name')
+  const { scope, teams, players } = await getScopedRosterData();
+  const supabase = await createClient();
+  const admin = createAdminClient();
+  const db =
+    scope.role === "admin" || scope.role.startsWith("resp_") ? admin : supabase;
+  const { data: allTeams } = await db
+    .from("teams")
+    .select("id, name")
+    .order("name");
 
   const teamList = (teams as TeamRow[]).map((t) => ({
     ...t,
-    name: t.name ?? 'Équipe sans nom',
-    category: t.category ?? '—',
-    pole: t.pole ?? 'Pôle non défini',
-  }))
+    name: t.name ?? "Équipe sans nom",
+    category: t.category ?? "—",
+    pole: t.pole ?? "Pôle non défini",
+  }));
 
-  const playersByTeam = new Map<string, PlayerRow[]>()
+  const playersByTeam = new Map<string, PlayerRow[]>();
   for (const p of players as PlayerRow[]) {
-    if (!p.team_id) continue
-    const arr = playersByTeam.get(p.team_id) ?? []
-    arr.push(p)
-    playersByTeam.set(p.team_id, arr)
+    if (!p.team_id) continue;
+    const arr = playersByTeam.get(p.team_id) ?? [];
+    arr.push(p);
+    playersByTeam.set(p.team_id, arr);
   }
 
   const teamsWithPlayers = teamList
     .map((team) => {
       const roster = (playersByTeam.get(team.id) ?? [])
         .slice()
-        .sort((a, b) => fullName(a).localeCompare(fullName(b), 'fr', { sensitivity: 'base' }))
+        .sort((a, b) =>
+          fullName(a).localeCompare(fullName(b), "fr", { sensitivity: "base" }),
+        );
       return {
         id: team.id,
         name: team.name,
         category: team.category,
         pole: team.pole,
         players: roster,
-      }
+      };
     })
-    .sort(byName)
+    .sort(byName);
 
-  const teamOptions = ((allTeams as { id: string; name: string }[] | null) ?? teamList).map(
-    (t) => ({
-      id: t.id,
-      name: t.name,
-    })
-  )
+  const teamOptions = (
+    (allTeams as { id: string; name: string }[] | null) ?? teamList
+  ).map((t) => ({
+    id: t.id,
+    name: t.name,
+  }));
 
   const filteredTeams = teamsWithPlayers
     .map((team) => {
-      if (!q) return team
-      const teamMatch = `${team.name} ${team.category} ${team.pole}`.toLowerCase().includes(q)
-      const filteredPlayers = team.players.filter((p) => fullName(p).toLowerCase().includes(q))
-      if (teamMatch) return team
-      return { ...team, players: filteredPlayers }
+      if (!q) return team;
+      const teamMatch = `${team.name} ${team.category} ${team.pole}`
+        .toLowerCase()
+        .includes(q);
+      const filteredPlayers = team.players.filter((p) =>
+        fullName(p).toLowerCase().includes(q),
+      );
+      if (teamMatch) return team;
+      return { ...team, players: filteredPlayers };
     })
     .filter(
       (team) =>
         !q ||
         team.players.length > 0 ||
-        `${team.name} ${team.category} ${team.pole}`.toLowerCase().includes(q)
-    )
+        `${team.name} ${team.category} ${team.pole}`.toLowerCase().includes(q),
+    );
 
-  const totalPlayers = filteredTeams.reduce((acc, t) => acc + t.players.length, 0)
+  const totalPlayers = filteredTeams.reduce(
+    (acc, t) => acc + t.players.length,
+    0,
+  );
 
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-400">Module</p>
+        <p className="text-xs font-black uppercase tracking-[0.32em] text-slate-400">
+          Module
+        </p>
         <h2 className="mt-2 font-[var(--font-teko)] text-4xl font-black uppercase tracking-[0.04em] text-slate-900">
           Effectif
         </h2>
         <p className="mt-2 max-w-3xl text-sm text-slate-500">
-          Vue par équipe uniquement. Clique sur un joueur pour ouvrir sa fiche détaillée.
+          Vue par équipe uniquement. Clique sur un joueur pour ouvrir sa fiche
+          détaillée.
         </p>
       </div>
 
@@ -142,7 +169,7 @@ export default async function EffectifPage({
               <input
                 type="text"
                 name="q"
-                defaultValue={params.q ?? ''}
+                defaultValue={params.q ?? ""}
                 placeholder="Rechercher un joueur ou une équipe..."
                 className="h-10 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm text-slate-700 outline-none transition focus:border-blue-400 focus:bg-white"
               />
@@ -179,7 +206,10 @@ export default async function EffectifPage({
                 <summary className="cursor-pointer list-none px-3 py-2 text-xs font-bold uppercase tracking-wider text-blue-700">
                   + Ajouter un joueur (soumis à validation admin)
                 </summary>
-                <form action={requestCreatePlayer} className="border-t border-slate-200 p-3">
+                <form
+                  action={requestCreatePlayer}
+                  className="border-t border-slate-200 p-3"
+                >
                   <input type="hidden" name="teamId" value={team.id} />
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                     <input
@@ -257,7 +287,9 @@ export default async function EffectifPage({
               </details>
 
               {team.players.length === 0 ? (
-                <p className="text-sm text-slate-500">Aucun joueur dans cet effectif.</p>
+                <p className="text-sm text-slate-500">
+                  Aucun joueur dans cet effectif.
+                </p>
               ) : (
                 <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {team.players.map((p) => (
@@ -279,30 +311,38 @@ export default async function EffectifPage({
                           <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
                             <div>
                               <dt className="text-slate-400">Prénom</dt>
-                              <dd className="font-semibold text-slate-700">{p.firstname ?? '—'}</dd>
+                              <dd className="font-semibold text-slate-700">
+                                {p.firstname ?? "—"}
+                              </dd>
                             </div>
                             <div>
                               <dt className="text-slate-400">Nom</dt>
-                              <dd className="font-semibold text-slate-700">{p.lastname ?? '—'}</dd>
+                              <dd className="font-semibold text-slate-700">
+                                {p.lastname ?? "—"}
+                              </dd>
                             </div>
                             <div>
                               <dt className="text-slate-400">Équipe</dt>
-                              <dd className="font-semibold text-slate-700">{team.name}</dd>
+                              <dd className="font-semibold text-slate-700">
+                                {team.name}
+                              </dd>
                             </div>
                             <div>
                               <dt className="text-slate-400">Catégorie</dt>
                               <dd className="font-semibold text-slate-700">
-                                {p.category ?? team.category ?? '—'}
+                                {p.category ?? team.category ?? "—"}
                               </dd>
                             </div>
                             <div>
                               <dt className="text-slate-400">Club</dt>
-                              <dd className="font-semibold text-slate-700">{p.club_name ?? '—'}</dd>
+                              <dd className="font-semibold text-slate-700">
+                                {p.club_name ?? "—"}
+                              </dd>
                             </div>
                             <div>
                               <dt className="text-slate-400">Licence</dt>
                               <dd className="font-semibold text-slate-700">
-                                {p.license_number ?? '—'}
+                                {p.license_number ?? "—"}
                               </dd>
                             </div>
                             <div>
@@ -313,26 +353,30 @@ export default async function EffectifPage({
                             </div>
                             <div>
                               <dt className="text-slate-400">Email</dt>
-                              <dd className="font-semibold text-slate-700">{p.email ?? '—'}</dd>
+                              <dd className="font-semibold text-slate-700">
+                                {p.email ?? "—"}
+                              </dd>
                             </div>
                             <div className="col-span-2">
-                              <dt className="text-slate-400">Responsable légal</dt>
+                              <dt className="text-slate-400">
+                                Responsable légal
+                              </dt>
                               <dd className="font-semibold text-slate-700">
-                                {p.legal_guardian_name ?? '—'}
+                                {p.legal_guardian_name ?? "—"}
                               </dd>
                             </div>
                             <div className="col-span-2">
                               <dt className="text-slate-400">Adresse</dt>
                               <dd className="font-semibold text-slate-700">
                                 {p.address_street
-                                  ? `${p.address_street}${p.address_zipcode || p.address_city ? ', ' : ''}${p.address_zipcode ?? ''} ${p.address_city ?? ''}`.trim()
-                                  : '—'}
+                                  ? `${p.address_street}${p.address_zipcode || p.address_city ? ", " : ""}${p.address_zipcode ?? ""} ${p.address_city ?? ""}`.trim()
+                                  : "—"}
                               </dd>
                             </div>
                             <div className="col-span-2">
                               <dt className="text-slate-400">Statut</dt>
                               <dd className="font-semibold text-slate-700">
-                                {p.status_label ?? 'Actif'}
+                                {p.status_label ?? "Actif"}
                               </dd>
                             </div>
                           </dl>
@@ -342,40 +386,44 @@ export default async function EffectifPage({
                             className="mt-3 grid grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-white p-2 md:grid-cols-2"
                           >
                             <input type="hidden" name="playerId" value={p.id} />
-                            <input type="hidden" name="teamId" value={team.id} />
+                            <input
+                              type="hidden"
+                              name="teamId"
+                              value={team.id}
+                            />
                             <input
                               name="firstname"
-                              defaultValue={p.firstname ?? ''}
+                              defaultValue={p.firstname ?? ""}
                               required
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs"
                             />
                             <input
                               name="lastname"
-                              defaultValue={p.lastname ?? ''}
+                              defaultValue={p.lastname ?? ""}
                               required
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs"
                             />
                             <input
                               name="gender"
-                              defaultValue={p.gender ?? ''}
+                              defaultValue={p.gender ?? ""}
                               placeholder="M/F"
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs"
                             />
                             <input
                               name="mobile_phone"
-                              defaultValue={p.mobile_phone ?? ''}
+                              defaultValue={p.mobile_phone ?? ""}
                               placeholder="Mobile"
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs"
                             />
                             <input
                               name="email"
-                              defaultValue={p.email ?? ''}
+                              defaultValue={p.email ?? ""}
                               placeholder="Email"
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs md:col-span-2"
                             />
                             <input
                               name="legal_guardian_name"
-                              defaultValue={p.legal_guardian_name ?? ''}
+                              defaultValue={p.legal_guardian_name ?? ""}
                               placeholder="Responsable légal"
                               className="h-8 rounded-lg border border-slate-200 px-2 text-xs md:col-span-2"
                             />
@@ -392,7 +440,11 @@ export default async function EffectifPage({
                             className="mt-2 flex flex-wrap items-center gap-2"
                           >
                             <input type="hidden" name="playerId" value={p.id} />
-                            <input type="hidden" name="fromTeamId" value={team.id} />
+                            <input
+                              type="hidden"
+                              name="fromTeamId"
+                              value={team.id}
+                            />
                             <select
                               name="toTeamId"
                               defaultValue={team.id}
@@ -414,7 +466,11 @@ export default async function EffectifPage({
 
                           <form action={requestDeletePlayer} className="mt-2">
                             <input type="hidden" name="playerId" value={p.id} />
-                            <input type="hidden" name="teamId" value={team.id} />
+                            <input
+                              type="hidden"
+                              name="teamId"
+                              value={team.id}
+                            />
                             <button
                               type="submit"
                               className="h-8 rounded-lg border border-rose-200 bg-rose-50 px-2 text-[11px] font-bold text-rose-700 hover:bg-rose-100"
@@ -442,5 +498,5 @@ export default async function EffectifPage({
         ))}
       </div>
     </div>
-  )
+  );
 }

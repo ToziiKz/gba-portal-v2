@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { Teko } from 'next/font/google'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Teko } from "next/font/google";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Package,
   ClipboardList,
@@ -15,42 +15,42 @@ import {
   Save,
   ArrowUpRight,
   AlertTriangle,
-} from 'lucide-react'
+} from "lucide-react";
 
 import {
   type RequestItem,
   type RequestStatus,
   useEquipementsState,
-} from './hooks/useEquipementsState'
+} from "./hooks/useEquipementsState";
 
-const teko = Teko({ subsets: ['latin'], weight: ['400', '600'] })
+const teko = Teko({ subsets: ["latin"], weight: ["400", "600"] });
 
 function statusChip(status: RequestStatus) {
   switch (status) {
-    case 'EN_ATTENTE':
+    case "EN_ATTENTE":
       return {
-        label: 'En attente',
-        cls: 'border-amber-500/30 bg-amber-500/10 text-amber-200',
+        label: "En attente",
+        cls: "border-amber-500/30 bg-amber-500/10 text-amber-200",
         Icon: Clock3,
-      }
-    case 'VALIDE':
+      };
+    case "VALIDE":
       return {
-        label: 'Validé',
-        cls: 'border-[#0065BD]/30 bg-[#0065BD]/15 text-[#9fd3ff]',
+        label: "Validé",
+        cls: "border-[#0065BD]/30 bg-[#0065BD]/15 text-[#9fd3ff]",
         Icon: CheckCircle2,
-      }
-    case 'LIVRE':
+      };
+    case "LIVRE":
       return {
-        label: 'Livré',
-        cls: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200',
+        label: "Livré",
+        cls: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
         Icon: Package,
-      }
-    case 'REFUSE':
+      };
+    case "REFUSE":
       return {
-        label: 'Refusé',
-        cls: 'border-red-500/30 bg-red-500/10 text-red-200',
+        label: "Refusé",
+        cls: "border-red-500/30 bg-red-500/10 text-red-200",
         Icon: XCircle,
-      }
+      };
   }
 }
 
@@ -83,7 +83,7 @@ export default function EquipementsClient() {
     deliverInfo,
     openDeliver,
     confirmDeliver,
-  } = useEquipementsState()
+  } = useEquipementsState();
 
   return (
     <div className="space-y-8">
@@ -101,7 +101,8 @@ export default function EquipementsClient() {
 
         <div className="flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 rounded-full border border-black/10 bg-black/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-black/70">
-            <ClipboardList size={14} className="text-[#0065BD]" /> {counts.pending} en attente
+            <ClipboardList size={14} className="text-[#0065BD]" />{" "}
+            {counts.pending} en attente
           </div>
           <div className="hidden md:flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-amber-200">
             <AlertTriangle size={14} /> {counts.urgent} urgent
@@ -118,7 +119,10 @@ export default function EquipementsClient() {
 
       <div className="flex flex-col md:flex-row gap-4 p-1 bg-black/5 border border-black/10 rounded-2xl backdrop-blur-md">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+            size={18}
+          />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -129,19 +133,21 @@ export default function EquipementsClient() {
         <div className="w-px bg-black/5 hidden md:block" />
         <div className="flex items-center gap-2 px-4 py-2">
           <Filter size={16} className="text-slate-500" />
-          {(['ALL', 'EN_ATTENTE', 'VALIDE', 'LIVRE', 'REFUSE'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setStatus(t)}
-              className={`px-3 py-2 rounded-full border text-[10px] font-black uppercase tracking-[0.28em] transition ${
-                status === t
-                  ? 'border-[#0065BD]/40 bg-[#0065BD]/15 text-black'
-                  : 'border-black/10 bg-black/5 text-black/60 hover:bg-black/5'
-              }`}
-            >
-              {t === 'ALL' ? 'Tout' : t}
-            </button>
-          ))}
+          {(["ALL", "EN_ATTENTE", "VALIDE", "LIVRE", "REFUSE"] as const).map(
+            (t) => (
+              <button
+                key={t}
+                onClick={() => setStatus(t)}
+                className={`px-3 py-2 rounded-full border text-[10px] font-black uppercase tracking-[0.28em] transition ${
+                  status === t
+                    ? "border-[#0065BD]/40 bg-[#0065BD]/15 text-black"
+                    : "border-black/10 bg-black/5 text-black/60 hover:bg-black/5"
+                }`}
+              >
+                {t === "ALL" ? "Tout" : t}
+              </button>
+            ),
+          )}
         </div>
       </div>
 
@@ -150,17 +156,23 @@ export default function EquipementsClient() {
         <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-black/55">Demandes</p>
-              <h2 className={`${teko.className} text-3xl uppercase mt-2`}>File</h2>
+              <p className="text-xs uppercase tracking-[0.35em] text-black/55">
+                Demandes
+              </p>
+              <h2 className={`${teko.className} text-3xl uppercase mt-2`}>
+                File
+              </h2>
             </div>
-            <p className="text-xs text-black/45">{filtered.length} résultat(s)</p>
+            <p className="text-xs text-black/45">
+              {filtered.length} résultat(s)
+            </p>
           </div>
 
           <div className="mt-5 grid gap-3">
             {filtered.map((r) => {
-              const chip = statusChip(r.status)
-              const Icon = chip.Icon
-              const isSel = r.id === selectedId
+              const chip = statusChip(r.status);
+              const Icon = chip.Icon;
+              const isSel = r.id === selectedId;
 
               return (
                 <button
@@ -169,15 +181,17 @@ export default function EquipementsClient() {
                   onClick={() => setSelectedId(r.id)}
                   className={`w-full rounded-2xl border p-4 text-left transition ${
                     isSel
-                      ? 'border-black/25 bg-black/5'
-                      : 'border-black/10 bg-black/5 hover:border-black/20 hover:bg-black/7'
+                      ? "border-black/25 bg-black/5"
+                      : "border-black/10 bg-black/5 hover:border-black/20 hover:bg-black/7"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-black truncate">{r.title}</p>
-                        {r.priority === 'Urgent' && r.status !== 'LIVRE' ? (
+                        <p className="text-sm font-semibold text-black truncate">
+                          {r.title}
+                        </p>
+                        {r.priority === "Urgent" && r.status !== "LIVRE" ? (
                           <span className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.28em] text-amber-200">
                             <AlertTriangle size={14} /> URGENT
                           </span>
@@ -194,7 +208,7 @@ export default function EquipementsClient() {
                     </span>
                   </div>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -203,23 +217,31 @@ export default function EquipementsClient() {
         <div className="rounded-2xl border border-black/10 bg-white/70 p-5">
           {!selected ? (
             <div className="rounded-2xl border border-black/10 bg-black/5 p-6">
-              <p className="text-sm font-semibold text-black">Aucune sélection</p>
-              <p className="mt-2 text-sm text-black/65">Choisis une demande dans la file.</p>
+              <p className="text-sm font-semibold text-black">
+                Aucune sélection
+              </p>
+              <p className="mt-2 text-sm text-black/65">
+                Choisis une demande dans la file.
+              </p>
             </div>
           ) : (
             <div className="space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-black/55">Détails</p>
-                  <h2 className={`${teko.className} text-4xl uppercase mt-2`}>{selected.title}</h2>
+                  <p className="text-xs uppercase tracking-[0.35em] text-black/55">
+                    Détails
+                  </p>
+                  <h2 className={`${teko.className} text-4xl uppercase mt-2`}>
+                    {selected.title}
+                  </h2>
                   <p className="mt-2 text-[10px] font-black uppercase tracking-[0.28em] text-black/40">
-                    {selected.team} · {selected.category} · priorité {selected.priority} ·{' '}
-                    {selected.createdAt}
+                    {selected.team} · {selected.category} · priorité{" "}
+                    {selected.priority} · {selected.createdAt}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setReqStatus(selected.id, 'VALIDE')}
+                    onClick={() => setReqStatus(selected.id, "VALIDE")}
                     className="rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-black/70 hover:bg-black/5 transition"
                     type="button"
                   >
@@ -233,7 +255,7 @@ export default function EquipementsClient() {
                     Livrer
                   </button>
                   <button
-                    onClick={() => setReqStatus(selected.id, 'REFUSE')}
+                    onClick={() => setReqStatus(selected.id, "REFUSE")}
                     className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-red-200 hover:bg-red-500/15 transition"
                     type="button"
                   >
@@ -260,12 +282,16 @@ export default function EquipementsClient() {
                           </div>
                         ) : null}
                       </div>
-                      <span className={`${teko.className} text-2xl text-black`}>x{it.qty}</span>
+                      <span className={`${teko.className} text-2xl text-black`}>
+                        x{it.qty}
+                      </span>
                     </li>
                   ))}
                 </ul>
                 {selected.note ? (
-                  <p className="mt-4 text-sm text-black/55">Note : {selected.note}</p>
+                  <p className="mt-4 text-sm text-black/55">
+                    Note : {selected.note}
+                  </p>
                 ) : null}
               </div>
 
@@ -278,7 +304,8 @@ export default function EquipementsClient() {
                     href="/dashboard/stock"
                     className="inline-flex items-center gap-2 rounded-xl border border-black/10 bg-black/5 px-4 py-2 text-[10px] font-black uppercase tracking-[0.28em] text-black/70 hover:bg-black/5 transition"
                   >
-                    Vérifier stock <ArrowUpRight size={14} className="text-[#0065BD]" />
+                    Vérifier stock{" "}
+                    <ArrowUpRight size={14} className="text-[#0065BD]" />
                   </a>
                   <a
                     href="/dashboard/licences"
@@ -290,8 +317,8 @@ export default function EquipementsClient() {
               </div>
 
               <p className="text-xs text-black/35">
-                Next : permissions, workflow par rôle, génération bon de commande, liaison stock par
-                SKU.
+                Next : permissions, workflow par rôle, génération bon de
+                commande, liaison stock par SKU.
               </p>
             </div>
           )}
@@ -326,7 +353,9 @@ export default function EquipementsClient() {
                     <p className="text-[10px] uppercase tracking-[0.35em] text-black/40 font-black">
                       Logistique
                     </p>
-                    <h3 className={`${teko.className} text-3xl uppercase text-black mt-2`}>
+                    <h3
+                      className={`${teko.className} text-3xl uppercase text-black mt-2`}
+                    >
                       Nouvelle demande
                     </h3>
                   </div>
@@ -346,8 +375,10 @@ export default function EquipementsClient() {
                     </label>
                     <input
                       required
-                      value={form.title ?? ''}
-                      onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+                      value={form.title ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, title: e.target.value }))
+                      }
                       className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-3 text-sm text-black outline-none focus:border-black/25 focus:ring-2 focus:ring-white/20"
                       placeholder="ex: Pack match week-end"
                     />
@@ -359,8 +390,10 @@ export default function EquipementsClient() {
                         Équipe
                       </label>
                       <input
-                        value={form.team ?? ''}
-                        onChange={(e) => setForm((p) => ({ ...p, team: e.target.value }))}
+                        value={form.team ?? ""}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, team: e.target.value }))
+                        }
                         className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-3 text-sm text-black outline-none focus:border-black/25 focus:ring-2 focus:ring-white/20"
                         placeholder="U15"
                       />
@@ -370,11 +403,11 @@ export default function EquipementsClient() {
                         Priorité
                       </label>
                       <select
-                        value={form.priority ?? 'Normal'}
+                        value={form.priority ?? "Normal"}
                         onChange={(e) =>
                           setForm((p) => ({
                             ...p,
-                            priority: e.target.value as 'Normal' | 'Urgent',
+                            priority: e.target.value as "Normal" | "Urgent",
                           }))
                         }
                         className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-3 text-sm text-black outline-none focus:border-black/25 focus:ring-2 focus:ring-white/20"
@@ -391,11 +424,14 @@ export default function EquipementsClient() {
                         Catégorie
                       </label>
                       <select
-                        value={form.category ?? 'Matériel'}
+                        value={form.category ?? "Matériel"}
                         onChange={(e) =>
                           setForm((p) => ({
                             ...p,
-                            category: e.target.value as 'Textile' | 'Matériel' | 'Medical',
+                            category: e.target.value as
+                              | "Textile"
+                              | "Matériel"
+                              | "Medical",
                           }))
                         }
                         className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-3 text-sm text-black outline-none focus:border-black/25 focus:ring-2 focus:ring-white/20"
@@ -410,8 +446,10 @@ export default function EquipementsClient() {
                         Note
                       </label>
                       <input
-                        value={form.note ?? ''}
-                        onChange={(e) => setForm((p) => ({ ...p, note: e.target.value }))}
+                        value={form.note ?? ""}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, note: e.target.value }))
+                        }
                         className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-3 text-sm text-black outline-none focus:border-black/25 focus:ring-2 focus:ring-white/20"
                         placeholder="Optionnel"
                       />
@@ -433,39 +471,49 @@ export default function EquipementsClient() {
                     </div>
 
                     <div className="mt-3 grid gap-3">
-                      {(form.items ?? []).map((it: RequestItem, idx: number) => (
-                        <div
-                          key={idx}
-                          className="grid grid-cols-1 sm:grid-cols-[1fr_160px_90px_40px] gap-2"
-                        >
-                          <input
-                            value={it.name}
-                            onChange={(e) => updateItemRow(idx, { name: e.target.value })}
-                            className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
-                            placeholder="Article"
-                          />
-                          <input
-                            value={it.sku ?? ''}
-                            onChange={(e) => updateItemRow(idx, { sku: e.target.value })}
-                            className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
-                            placeholder="SKU (optionnel)"
-                          />
-                          <input
-                            type="number"
-                            value={it.qty}
-                            onChange={(e) => updateItemRow(idx, { qty: Number(e.target.value) })}
-                            className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeItemRow(idx)}
-                            className="rounded-xl border border-black/10 bg-black/5 text-black/60 hover:bg-black/5 transition"
-                            aria-label="Supprimer"
+                      {(form.items ?? []).map(
+                        (it: RequestItem, idx: number) => (
+                          <div
+                            key={idx}
+                            className="grid grid-cols-1 sm:grid-cols-[1fr_160px_90px_40px] gap-2"
                           >
-                            <X size={18} className="mx-auto" />
-                          </button>
-                        </div>
-                      ))}
+                            <input
+                              value={it.name}
+                              onChange={(e) =>
+                                updateItemRow(idx, { name: e.target.value })
+                              }
+                              className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
+                              placeholder="Article"
+                            />
+                            <input
+                              value={it.sku ?? ""}
+                              onChange={(e) =>
+                                updateItemRow(idx, { sku: e.target.value })
+                              }
+                              className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
+                              placeholder="SKU (optionnel)"
+                            />
+                            <input
+                              type="number"
+                              value={it.qty}
+                              onChange={(e) =>
+                                updateItemRow(idx, {
+                                  qty: Number(e.target.value),
+                                })
+                              }
+                              className="w-full rounded-xl border border-black/10 bg-black/5 px-3 py-2 text-sm text-black outline-none focus:border-black/25"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeItemRow(idx)}
+                              className="rounded-xl border border-black/10 bg-black/5 text-black/60 hover:bg-black/5 transition"
+                              aria-label="Supprimer"
+                            >
+                              <X size={18} className="mx-auto" />
+                            </button>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 
@@ -482,7 +530,7 @@ export default function EquipementsClient() {
                       type="submit"
                       className="flex-[2] inline-flex items-center justify-center gap-2 rounded-xl border border-[#0065BD]/30 bg-[#0065BD] px-4 py-3 text-[10px] font-black uppercase tracking-[0.28em] text-black hover:bg-[#00549e] transition"
                     >
-                      {isSubmitting ? 'Envoi…' : 'Créer demande'}
+                      {isSubmitting ? "Envoi…" : "Créer demande"}
                       {!isSubmitting && <Save size={16} />}
                     </button>
                   </div>
@@ -521,7 +569,9 @@ export default function EquipementsClient() {
                     <p className="text-[10px] uppercase tracking-[0.35em] text-black/40 font-black">
                       Workflow
                     </p>
-                    <h3 className={`${teko.className} text-3xl uppercase text-black mt-2`}>
+                    <h3
+                      className={`${teko.className} text-3xl uppercase text-black mt-2`}
+                    >
                       Confirmer livraison
                     </h3>
                   </div>
@@ -537,7 +587,8 @@ export default function EquipementsClient() {
                 <div className="p-8 space-y-5">
                   <div className="rounded-2xl border border-black/10 bg-black/5 p-5">
                     <p className="text-sm text-black/80">
-                      <span className="font-semibold">{selected.title}</span> — {selected.team}
+                      <span className="font-semibold">{selected.title}</span> —{" "}
+                      {selected.team}
                     </p>
                     <p className="mt-2 text-[10px] font-black uppercase tracking-[0.28em] text-black/40">
                       Cette action passera la demande au statut LIVRÉ.
@@ -574,14 +625,20 @@ export default function EquipementsClient() {
                           className="flex items-center justify-between rounded-xl border border-black/10 bg-black/5 px-4 py-3"
                         >
                           <div>
-                            <div className="text-sm text-black/80">{it.name}</div>
+                            <div className="text-sm text-black/80">
+                              {it.name}
+                            </div>
                             {it.sku ? (
                               <div className="text-[10px] font-black uppercase tracking-[0.28em] text-black/35">
                                 SKU {it.sku}
                               </div>
                             ) : null}
                           </div>
-                          <div className={`${teko.className} text-2xl text-black`}>x{it.qty}</div>
+                          <div
+                            className={`${teko.className} text-2xl text-black`}
+                          >
+                            x{it.qty}
+                          </div>
                         </li>
                       ))}
                     </ul>
@@ -607,7 +664,8 @@ export default function EquipementsClient() {
 
                   {deliverInfo?.lowAfter != null ? (
                     <p className="text-xs text-black/45">
-                      Stock : {deliverInfo.lowAfter} article(s) sous le minimum après livraison.
+                      Stock : {deliverInfo.lowAfter} article(s) sous le minimum
+                      après livraison.
                     </p>
                   ) : null}
                 </div>
@@ -617,5 +675,5 @@ export default function EquipementsClient() {
         )}
       </AnimatePresence>
     </div>
-  )
+  );
 }

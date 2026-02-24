@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import * as React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -16,35 +16,38 @@ import {
   LogOut,
   HelpCircle,
   type LucideIcon,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { getVisibleNavItems, isActivePath } from '@/lib/dashboard/nav'
-import type { DashboardRole } from '@/lib/dashboardRole'
+import { getVisibleNavItems, isActivePath } from "@/lib/dashboard/nav";
+import type { DashboardRole } from "@/lib/dashboardRole";
 
 type Props = {
-  role: DashboardRole
-}
+  role: DashboardRole;
+};
 
 const iconMap: Record<string, LucideIcon> = {
-  '/dashboard': LayoutDashboard,
-  '/dashboard/effectif': Users,
-  '/dashboard/planning': Calendar,
-  '/dashboard/presences': CheckSquare,
-  '/dashboard/match': Trophy,
-  '/dashboard/acces': ShieldCheck,
-  '/dashboard/joueurs': Users,
-  '/dashboard/equipes': Trophy,
-}
+  "/dashboard": LayoutDashboard,
+  "/dashboard/effectif": Users,
+  "/dashboard/planning": Calendar,
+  "/dashboard/presences": CheckSquare,
+  "/dashboard/match": Trophy,
+  "/dashboard/acces": ShieldCheck,
+  "/dashboard/joueurs": Users,
+  "/dashboard/equipes": Trophy,
+};
 
 export function DashboardSidebar({ role }: Props) {
-  const pathname = usePathname()
-  const items = React.useMemo(() => getVisibleNavItems(role), [role])
+  const pathname = usePathname();
+  const items = React.useMemo(() => getVisibleNavItems(role), [role]);
 
   return (
     <aside className="fixed left-0 top-0 z-50 hidden h-full w-64 shrink-0 flex-col border-r border-[color:var(--ui-border)] bg-white lg:flex shadow-sm">
       {/* Brand Header */}
       <div className="flex h-24 items-center justify-center px-4 border-b border-slate-50">
-        <Link href="/dashboard" className="flex items-center gap-3 focus:outline-none group">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-3 focus:outline-none group"
+        >
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-blue-100 shadow-lg shadow-blue-100 transition-transform group-hover:scale-105">
             <Image
               src="/gba-logo.png"
@@ -73,8 +76,8 @@ export function DashboardSidebar({ role }: Props) {
         </p>
         <ul className="space-y-1.5">
           {items.map((item) => {
-            const Icon = iconMap[item.href] || ChevronRight
-            const active = isActivePath(pathname ?? '', item.href)
+            const Icon = iconMap[item.href] || ChevronRight;
+            const active = isActivePath(pathname ?? "", item.href);
 
             return (
               <li key={item.href}>
@@ -82,18 +85,20 @@ export function DashboardSidebar({ role }: Props) {
                   href={item.href}
                   className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
                     active
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
                   <Icon
-                    className={`h-5 w-5 ${active ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-600'} transition-colors`}
+                    className={`h-5 w-5 ${active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"} transition-colors`}
                   />
                   <span>{item.label}</span>
-                  {active && <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600" />}
+                  {active && (
+                    <div className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-600" />
+                  )}
                 </Link>
               </li>
-            )
+            );
           })}
         </ul>
       </nav>
@@ -120,5 +125,5 @@ export function DashboardSidebar({ role }: Props) {
         </div>
       </div>
     </aside>
-  )
+  );
 }

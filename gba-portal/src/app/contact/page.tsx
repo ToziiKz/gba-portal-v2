@@ -1,40 +1,50 @@
-import type { Metadata } from 'next'
-import { Mail, MessageSquare, ShieldCheck, Trophy, ArrowUpRight } from 'lucide-react'
+import type { Metadata } from "next";
+import {
+  Mail,
+  MessageSquare,
+  ShieldCheck,
+  Trophy,
+  ArrowUpRight,
+} from "lucide-react";
 
 export const metadata: Metadata = {
-  title: 'Contact — ESPACE GBA',
+  title: "Contact — ESPACE GBA",
   description:
-    'Prenez contact avec le Groupement Bruche Ackerland : Sponsoring, Presse, Inscriptions ou Support.',
-}
+    "Prenez contact avec le Groupement Bruche Ackerland : Sponsoring, Presse, Inscriptions ou Support.",
+};
 
-const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contact@gba-portal.fr'
+const contactEmail =
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@gba-portal.fr";
 
 const topics = [
   {
-    title: 'Partenariats',
-    description: 'Devenez sponsor et associez votre marque à l&apos;ambition du GBA.',
+    title: "Partenariats",
+    description:
+      "Devenez sponsor et associez votre marque à l&apos;ambition du GBA.",
     icon: Trophy,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10',
-    subject: 'Partenariat Sponsor GBA',
+    color: "text-amber-500",
+    bg: "bg-amber-500/10",
+    subject: "Partenariat Sponsor GBA",
   },
   {
-    title: 'Support Staff',
-    description: 'Aide à la connexion, droits d&apos;accès et outils numériques.',
+    title: "Support Staff",
+    description:
+      "Aide à la connexion, droits d&apos;accès et outils numériques.",
     icon: ShieldCheck,
-    color: 'text-cyan-500',
-    bg: 'bg-cyan-500/10',
-    subject: 'Support Accès Dashboard',
+    color: "text-cyan-500",
+    bg: "bg-cyan-500/10",
+    subject: "Support Accès Dashboard",
   },
   {
-    title: 'Inscriptions',
-    description: 'Rejoindre le club, licences jeunes et seniors, informations pratiques.',
+    title: "Inscriptions",
+    description:
+      "Rejoindre le club, licences jeunes et seniors, informations pratiques.",
     icon: MessageSquare,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
-    subject: 'Demande Inscription / Licence',
+    color: "text-blue-500",
+    bg: "bg-blue-500/10",
+    subject: "Demande Inscription / Licence",
   },
-]
+];
 
 export default function ContactPage() {
   return (
@@ -55,8 +65,8 @@ export default function ContactPage() {
             <span className="text-white/20">Projet.</span>
           </h1>
           <p className="mt-12 max-w-2xl text-xl text-white/60 leading-relaxed">
-            Une question sur le club, une envie de partenariat ou un besoin technique ? Notre équipe
-            est là pour vous répondre précisément.
+            Une question sur le club, une envie de partenariat ou un besoin
+            technique ? Notre équipe est là pour vous répondre précisément.
           </p>
         </div>
 
@@ -103,7 +113,9 @@ export default function ContactPage() {
               <h2 className="font-[family-name:var(--font-teko)] text-3xl font-bold uppercase tracking-wide mb-4 group-hover:text-cyan-400 transition-colors">
                 {topic.title}
               </h2>
-              <p className="text-white/50 text-sm leading-relaxed mb-8">{topic.description}</p>
+              <p className="text-white/50 text-sm leading-relaxed mb-8">
+                {topic.description}
+              </p>
               <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover:text-white transition-colors">
                 Ouvrir un ticket <ArrowUpRight className="w-4 h-4" />
               </div>
@@ -118,8 +130,8 @@ export default function ContactPage() {
               Réponse rapide
             </h3>
             <p className="text-sm text-white/50 leading-relaxed italic">
-              &quot;Nous privilégions des échanges directs et efficaces. Vous recevrez généralement
-              un retour sous 24h à 48h ouvrées.&quot;
+              &quot;Nous privilégions des échanges directs et efficaces. Vous
+              recevrez généralement un retour sous 24h à 48h ouvrées.&quot;
             </p>
           </div>
           <div className="p-10 rounded-[32px] bg-white/[0.02] border border-white/5">
@@ -127,12 +139,13 @@ export default function ContactPage() {
               Localisation
             </h3>
             <p className="text-sm text-white/50 leading-relaxed">
-              Basé au cœur de la vallée de la Bruche et de l&apos;Ackerland. <br />
+              Basé au cœur de la vallée de la Bruche et de l&apos;Ackerland.{" "}
+              <br />
               Entraînements et matchs sur nos complexes partenaires.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

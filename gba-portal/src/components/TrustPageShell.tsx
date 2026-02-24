@@ -1,17 +1,17 @@
-import type { ReactNode } from 'react'
-import Link from 'next/link'
+import type { ReactNode } from "react";
+import Link from "next/link";
 
 type TrustPageShellProps = {
-  eyebrow?: string
-  title: string
-  lead: string
-  children: ReactNode
-  cta?: ReactNode
-  showTopNav?: boolean
-}
+  eyebrow?: string;
+  title: string;
+  lead: string;
+  children: ReactNode;
+  cta?: ReactNode;
+  showTopNav?: boolean;
+};
 
 export function TrustPageShell({
-  eyebrow = 'Infos',
+  eyebrow = "Infos",
   title,
   lead,
   children,
@@ -25,10 +25,10 @@ export function TrustPageShell({
           {showTopNav ? (
             <nav aria-label="Navigation" className="mb-8 flex flex-wrap gap-2">
               {[
-                { href: '/', label: 'Accueil' },
-                { href: '/shop', label: 'Boutique' },
-                { href: '/sponsors', label: 'Sponsors' },
-                { href: '/contact', label: 'Contact' },
+                { href: "/", label: "Accueil" },
+                { href: "/shop", label: "Boutique" },
+                { href: "/sponsors", label: "Sponsors" },
+                { href: "/contact", label: "Contact" },
               ].map((item) => (
                 <Link
                   key={item.href}
@@ -42,7 +42,9 @@ export function TrustPageShell({
           ) : null}
 
           {eyebrow ? (
-            <p className="text-xs uppercase tracking-widest text-white/60">{eyebrow}</p>
+            <p className="text-xs uppercase tracking-widest text-white/60">
+              {eyebrow}
+            </p>
           ) : null}
           <h1 className="mt-4 font-[var(--font-teko)] text-5xl font-black tracking-[0.06em] text-white sm:text-6xl">
             {title}
@@ -58,5 +60,5 @@ export function TrustPageShell({
         </div>
       </section>
     </div>
-  )
+  );
 }

@@ -1,38 +1,42 @@
-'use client'
+"use client";
 
-import { motion, useMotionTemplate, useMotionValue } from 'framer-motion'
-import Image from 'next/image'
-import { User } from 'lucide-react'
-import { Teko } from 'next/font/google'
+import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import Image from "next/image";
+import { User } from "lucide-react";
+import { Teko } from "next/font/google";
 
-const teko = Teko({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
+const teko = Teko({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 interface Player {
-  id: number
-  nom: string
-  prenom: string
-  categorie: string
-  sous_categorie: string
-  poste?: string
-  numero?: string
-  note_globale?: number
-  photo_url?: string
-  equipe?: string // Nom de l'équipe
+  id: number;
+  nom: string;
+  prenom: string;
+  categorie: string;
+  sous_categorie: string;
+  poste?: string;
+  numero?: string;
+  note_globale?: number;
+  photo_url?: string;
+  equipe?: string; // Nom de l'équipe
 }
 
 interface PlayerCardProps {
-  player: Player
-  onClick: () => void
+  player: Player;
+  onClick: () => void;
 }
 
 export default function PlayerCard({ player, onClick }: PlayerCardProps) {
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
 
-  function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect()
-    mouseX.set(clientX - left)
-    mouseY.set(clientY - top)
+  function handleMouseMove({
+    currentTarget,
+    clientX,
+    clientY,
+  }: React.MouseEvent) {
+    const { left, top } = currentTarget.getBoundingClientRect();
+    mouseX.set(clientX - left);
+    mouseY.set(clientY - top);
   }
 
   return (
@@ -73,7 +77,7 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
             </div>
 
             <span className="text-[10px] font-bold text-[#0065BD] uppercase tracking-[0.3em] mb-1">
-              {player.poste || 'Joueur'}
+              {player.poste || "Joueur"}
             </span>
 
             <h3
@@ -89,7 +93,7 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
           {/* Note Globale */}
           <div className="w-10 h-10 rounded-full border border-black/10 flex items-center justify-center bg-black/5">
             <span className={`${teko.className} text-lg pt-1 text-black`}>
-              {player.note_globale || '-'}
+              {player.note_globale || "-"}
             </span>
           </div>
         </div>
@@ -99,15 +103,20 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
           {/* Numéro en fond */}
           <div
             className={`${teko.className} absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8rem] font-bold text-transparent opacity-10 select-none pointer-events-none`}
-            style={{ WebkitTextStroke: '1px rgba(255,255,255,0.2)' }}
+            style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)" }}
           >
-            {player.numero || '--'}
+            {player.numero || "--"}
           </div>
 
           {/* Avatar */}
           <div className="relative z-10 w-20 h-20 bg-gradient-to-b from-slate-700 to-slate-900 rounded-full flex items-center justify-center border border-black/10 shadow-2xl group-hover:scale-110 transition-transform duration-500 overflow-hidden">
             {player.photo_url ? (
-              <Image src={player.photo_url} alt={player.nom} fill className="object-cover" />
+              <Image
+                src={player.photo_url}
+                alt={player.nom}
+                fill
+                className="object-cover"
+              />
             ) : (
               <User size={32} className="text-slate-500" />
             )}
@@ -115,5 +124,5 @@ export default function PlayerCard({ player, onClick }: PlayerCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

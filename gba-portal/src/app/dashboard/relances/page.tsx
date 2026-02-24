@@ -1,10 +1,10 @@
-import { getRelances } from './actions'
-import RelancesClient from './RelancesClient'
+import { getRelances } from "./actions";
+import RelancesClient from "./RelancesClient";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = "force-dynamic";
 
 export default async function DashboardRelancesPage() {
-  const relances = await getRelances()
+  const relances = await getRelances();
 
-  return <RelancesClient initialRelances={relances} />
+  return <RelancesClient initialRelances={relances} />;
 }

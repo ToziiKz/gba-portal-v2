@@ -1,30 +1,38 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 export const metadata = {
-  title: 'Match · GBA Dashboard',
-}
+  title: "Match · GBA Dashboard",
+};
 
 const subModules = [
   {
-    title: 'Composition',
-    description: 'Construire le onze, définir les postes et préparer les variantes.',
-    href: '/dashboard/tactique',
-    cta: 'Ouvrir Composition',
-    badge: 'Stratégie',
-    accent: 'from-blue-500/15 to-cyan-500/10',
+    title: "Composition",
+    description:
+      "Construire le onze, définir les postes et préparer les variantes.",
+    href: "/dashboard/tactique",
+    cta: "Ouvrir Composition",
+    badge: "Stratégie",
+    accent: "from-blue-500/15 to-cyan-500/10",
   },
   {
-    title: 'Convocations',
-    description: 'Composer le groupe, notifier les joueurs et suivre les retours.',
-    href: '/dashboard/convocations',
-    cta: 'Ouvrir Convocations',
-    badge: 'Organisation',
-    accent: 'from-emerald-500/15 to-teal-500/10',
+    title: "Convocations",
+    description:
+      "Composer le groupe, notifier les joueurs et suivre les retours.",
+    href: "/dashboard/convocations",
+    cta: "Ouvrir Convocations",
+    badge: "Organisation",
+    accent: "from-emerald-500/15 to-teal-500/10",
   },
-]
+];
 
 export default function MatchPage() {
   return (
@@ -39,7 +47,8 @@ export default function MatchPage() {
             Centre de match
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-[color:var(--ui-muted)]">
-            Un espace clair, visuel et orienté action pour préparer ton prochain match rapidement.
+            Un espace clair, visuel et orienté action pour préparer ton prochain
+            match rapidement.
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
@@ -80,5 +89,5 @@ export default function MatchPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

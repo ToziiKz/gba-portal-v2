@@ -1,28 +1,28 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 
-import { Modal } from '@/components/ui/Modal'
-import { Button, type ButtonProps } from '@/components/ui/Button'
+import { Modal } from "@/components/ui/Modal";
+import { Button, type ButtonProps } from "@/components/ui/Button";
 
 type Props = {
-  label: string
-  title?: string
-  description?: string
-  className?: string
-  variant?: NonNullable<ButtonProps['variant']>
-  size?: NonNullable<ButtonProps['size']>
-}
+  label: string;
+  title?: string;
+  description?: string;
+  className?: string;
+  variant?: NonNullable<ButtonProps["variant"]>;
+  size?: NonNullable<ButtonProps["size"]>;
+};
 
 export function ComingSoonButton({
   label,
-  title = 'Bientôt disponible',
-  description = 'Cette action est prévue dans une prochaine itération. Pour l’instant, l’UI sert à valider les écrans et les parcours.',
+  title = "Bientôt disponible",
+  description = "Cette action est prévue dans une prochaine itération. Pour l’instant, l’UI sert à valider les écrans et les parcours.",
   className,
-  variant = 'ghost',
-  size = 'sm',
+  variant = "ghost",
+  size = "sm",
 }: Props) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
   return (
     <>
@@ -40,12 +40,17 @@ export function ComingSoonButton({
         <div className="space-y-4">
           <p className="text-sm text-white/70">{description}</p>
           <div className="flex justify-end">
-            <Button type="button" onClick={() => setOpen(false)} variant="secondary" size="sm">
+            <Button
+              type="button"
+              onClick={() => setOpen(false)}
+              variant="secondary"
+              size="sm"
+            >
               OK
             </Button>
           </div>
         </div>
       </Modal>
     </>
-  )
+  );
 }

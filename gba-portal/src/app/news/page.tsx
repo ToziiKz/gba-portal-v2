@@ -1,42 +1,42 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import Image from 'next/image'
+import type { Metadata } from "next";
+import Link from "next/link";
+import Image from "next/image";
 
 const news = [
   {
-    title: 'Week-end de match : l’école de foot à l’honneur',
-    date: '2026-02-01',
+    title: "Week-end de match : l’école de foot à l’honneur",
+    date: "2026-02-01",
     summary:
-      'Tournoi jeunes, buvette, photos : une journée club qui rassemble toutes les générations au stade municipal.',
-    tag: 'Vie de club',
-    image: '/actu-stadium-bg.jpg',
-    readTime: '2 min',
+      "Tournoi jeunes, buvette, photos : une journée club qui rassemble toutes les générations au stade municipal.",
+    tag: "Vie de club",
+    image: "/actu-stadium-bg.jpg",
+    readTime: "2 min",
   },
   {
-    title: 'Partenaire premium signé : Boulangerie Martin',
-    date: '2026-01-25',
+    title: "Partenaire premium signé : Boulangerie Martin",
+    date: "2026-01-25",
     summary:
-      'La Boulangerie Martin devient official partner et soutient la formation et la vie locale du Groupement.',
-    tag: 'Partenaires',
-    image: '/manifesto-bg.png',
-    readTime: '3 min',
+      "La Boulangerie Martin devient official partner et soutient la formation et la vie locale du Groupement.",
+    tag: "Partenaires",
+    image: "/manifesto-bg.png",
+    readTime: "3 min",
   },
   {
-    title: 'Boutique : précommandes ouvertes pour la nouvelle saison',
-    date: '2026-01-20',
+    title: "Boutique : précommandes ouvertes pour la nouvelle saison",
+    date: "2026-01-20",
     summary:
-      'Maillot, écharpe, pack supporter : découvrez la nouvelle collection et précommandez vos articles dès maintenant.',
-    tag: 'Boutique',
-    image: '/shop-locker.avif',
-    readTime: '1 min',
+      "Maillot, écharpe, pack supporter : découvrez la nouvelle collection et précommandez vos articles dès maintenant.",
+    tag: "Boutique",
+    image: "/shop-locker.avif",
+    readTime: "1 min",
   },
-]
+];
 
 export const metadata: Metadata = {
-  title: 'Actualités — ESPACE GBA',
+  title: "Actualités — ESPACE GBA",
   description:
-    'Suivez les derniers moments forts, infos club et nouveautés du Groupement Bruche Ackerland.',
-}
+    "Suivez les derniers moments forts, infos club et nouveautés du Groupement Bruche Ackerland.",
+};
 
 export default function NewsPage() {
   return (
@@ -57,8 +57,9 @@ export default function NewsPage() {
             <span className="text-white/20">Forts.</span>
           </h1>
           <p className="mt-12 max-w-2xl text-xl text-white/60 leading-relaxed">
-            Ici bat le cœur du club. Entre victoires sur le terrain, engagements locaux et vie
-            associative, découvrez tout ce qui fait l&apos;ADN du GBA.
+            Ici bat le cœur du club. Entre victoires sur le terrain, engagements
+            locaux et vie associative, découvrez tout ce qui fait l&apos;ADN du
+            GBA.
           </p>
         </div>
 
@@ -90,7 +91,9 @@ export default function NewsPage() {
                 <h2 className="font-[family-name:var(--font-teko)] text-4xl font-bold uppercase leading-none tracking-wide md:text-5xl group-hover:text-cyan-400 transition-colors">
                   {news[0].title}
                 </h2>
-                <p className="mt-6 text-white/60 leading-relaxed">{news[0].summary}</p>
+                <p className="mt-6 text-white/60 leading-relaxed">
+                  {news[0].summary}
+                </p>
                 <div className="mt-8 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white group-hover:gap-4 transition-all">
                   Lire la suite <span className="text-xl">→</span>
                 </div>
@@ -122,11 +125,11 @@ export default function NewsPage() {
               </div>
               <div className="flex flex-1 flex-col p-8">
                 <div className="mb-4 text-[10px] uppercase tracking-widest text-white/40">
-                  {new Date(item.date).toLocaleDateString('fr-FR', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                  })}{' '}
+                  {new Date(item.date).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                  })}{" "}
                   — {item.readTime}
                 </div>
                 <h3 className="font-[family-name:var(--font-teko)] text-3xl font-bold uppercase leading-tight tracking-wide group-hover:text-cyan-400 transition-colors">
@@ -149,11 +152,11 @@ export default function NewsPage() {
             Ne manquez rien.
           </h3>
           <p className="text-white/50 mb-10 max-w-xl mx-auto">
-            Suivez-nous également sur nos réseaux sociaux pour les résultats en direct et les
-            coulisses du club.
+            Suivez-nous également sur nos réseaux sociaux pour les résultats en
+            direct et les coulisses du club.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            {['Instagram', 'Facebook', 'LinkedIn'].map((social) => (
+            {["Instagram", "Facebook", "LinkedIn"].map((social) => (
               <button
                 key={social}
                 className="rounded-full border border-white/10 bg-white/5 px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all hover:bg-white hover:text-black"
@@ -165,5 +168,5 @@ export default function NewsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

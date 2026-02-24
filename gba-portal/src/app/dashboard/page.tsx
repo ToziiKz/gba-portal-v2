@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
+import type { Metadata } from "next";
+import Link from "next/link";
 import {
   ClipboardCheck,
   Users,
@@ -11,33 +11,34 @@ import {
   AlertCircle,
   Trophy,
   Lock,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { getDashboardHomeData } from '@/lib/dashboard/server-data'
-import { getCoachRosterHealth } from '@/lib/dashboard/roster-health'
-import { Card, CardContent } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { getDashboardHomeData } from "@/lib/dashboard/server-data";
+import { getCoachRosterHealth } from "@/lib/dashboard/roster-health";
+import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 
 export const metadata: Metadata = {
-  title: 'Espace GBA · Dashboard',
+  title: "Espace GBA · Dashboard",
   description:
-    'Tableau de bord opérationnel : priorités terrain, effectif et organisation du club.',
-}
+    "Tableau de bord opérationnel : priorités terrain, effectif et organisation du club.",
+};
 
-const weekdayOrder = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+const weekdayOrder = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 export default async function DashboardPage() {
-  const { scope, sessions } = await getDashboardHomeData()
-  const { players: healthPlayers, stats: healthStats } = await getCoachRosterHealth()
+  const { scope, sessions } = await getDashboardHomeData();
+  const { players: healthPlayers, stats: healthStats } =
+    await getCoachRosterHealth();
 
   const orderedSessions = sessions.slice().sort((a, b) => {
-    const ai = weekdayOrder.indexOf(a.day ?? '')
-    const bi = weekdayOrder.indexOf(b.day ?? '')
-    if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
-    return String(a.start_time ?? '').localeCompare(String(b.start_time ?? ''))
-  })
+    const ai = weekdayOrder.indexOf(a.day ?? "");
+    const bi = weekdayOrder.indexOf(b.day ?? "");
+    if (ai !== bi) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    return String(a.start_time ?? "").localeCompare(String(b.start_time ?? ""));
+  });
 
-  const nextSession = orderedSessions[0] ?? null
+  const nextSession = orderedSessions[0] ?? null;
 
   return (
     <div className="space-y-8 pb-10">
@@ -68,7 +69,7 @@ export default async function DashboardPage() {
                       </span>
                     </div>
                     <h3 className="text-4xl md:text-6xl font-black text-white uppercase font-[var(--font-teko)] tracking-tight leading-none">
-                      {nextSession.team?.name ?? 'Mon Équipe'}
+                      {nextSession.team?.name ?? "Mon Équipe"}
                     </h3>
                     <div className="mt-6 flex flex-wrap gap-5 text-blue-50/80">
                       <div className="flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-wide">
@@ -149,7 +150,7 @@ export default async function DashboardPage() {
                           {s.day?.slice(0, 3)}
                         </span>
                         <span className="text-sm font-black text-slate-700 uppercase group-hover:text-blue-600 transition-colors">
-                          {s.start_time?.split(':')[0]}h
+                          {s.start_time?.split(":")[0]}h
                         </span>
                       </div>
                       <div className="min-w-0">
@@ -187,7 +188,7 @@ export default async function DashboardPage() {
         {/* RIGHT: Team Status & Workflow */}
         <div className="lg:col-span-5 space-y-8">
           {/* TEAM HEALTH WIDGET */}
-          {scope.role === 'coach' && healthStats && (
+          {scope.role === "coach" && healthStats && (
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 px-2">
                 État de l&apos;effectif
@@ -224,7 +225,9 @@ export default async function DashboardPage() {
                     </p>
                     {healthPlayers
                       .filter(
-                        (p) => p.payment_status === 'unpaid' || p.licence_status === 'missing'
+                        (p) =>
+                          p.payment_status === "unpaid" ||
+                          p.licence_status === "missing",
                       )
                       .slice(0, 3)
                       .map((p) => (
@@ -238,7 +241,7 @@ export default async function DashboardPage() {
                               {p.last_name} {p.first_name[0]}.
                             </p>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                              Taille : {p.size_label || 'NC'}
+                              Taille : {p.size_label || "NC"}
                             </p>
                           </div>
                           <div className="px-2.5 py-1 rounded-full bg-red-100 text-red-600 text-[8px] font-black uppercase tracking-wider">
@@ -246,7 +249,10 @@ export default async function DashboardPage() {
                           </div>
                         </Link>
                       ))}
-                    <Link href="/dashboard/effectif" className="block text-center pt-2">
+                    <Link
+                      href="/dashboard/effectif"
+                      className="block text-center pt-2"
+                    >
                       <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] hover:underline">
                         Gérer tout l&apos;effectif
                       </span>
@@ -266,22 +272,25 @@ export default async function DashboardPage() {
               <CardContent className="p-4 space-y-2">
                 {[
                   {
-                    label: 'Effectif complet',
-                    href: scope.role === 'coach' ? '/dashboard/effectif' : '/dashboard/joueurs',
+                    label: "Effectif complet",
+                    href:
+                      scope.role === "coach"
+                        ? "/dashboard/effectif"
+                        : "/dashboard/joueurs",
                     icon: Users,
-                    desc: 'Contacts & données',
+                    desc: "Contacts & données",
                   },
                   {
-                    label: 'Feuilles de match',
-                    href: '/dashboard/tactique',
+                    label: "Feuilles de match",
+                    href: "/dashboard/tactique",
                     icon: Trophy,
-                    desc: 'Compos & Tactiques',
+                    desc: "Compos & Tactiques",
                   },
                   {
-                    label: 'Accès & Staff',
-                    href: '/dashboard/acces',
+                    label: "Accès & Staff",
+                    href: "/dashboard/acces",
                     icon: Lock,
-                    desc: 'Permissions (Admin)',
+                    desc: "Permissions (Admin)",
                   },
                 ].map((tool) => (
                   <Link
@@ -316,13 +325,13 @@ export default async function DashboardPage() {
                 Coach Tip
               </p>
               <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
-                &quot;Faites pointer les joueurs directement à l&apos;arrivée au stade pour gagner
-                du temps lors de la causerie.&quot;
+                &quot;Faites pointer les joueurs directement à l&apos;arrivée au
+                stade pour gagner du temps lors de la causerie.&quot;
               </p>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

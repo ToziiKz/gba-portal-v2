@@ -1,16 +1,17 @@
-import type { Metadata } from 'next'
-import { ShoppingBag, Package, Truck, ArrowUpRight } from 'lucide-react'
-import { featuredProducts, shopCategories, shopFaqs } from '@/lib/shop-data'
+import type { Metadata } from "next";
+import { ShoppingBag, Package, Truck, ArrowUpRight } from "lucide-react";
+import { featuredProducts, shopCategories, shopFaqs } from "@/lib/shop-data";
 
 export const metadata: Metadata = {
-  title: 'Boutique Officielle — ESPACE GBA',
+  title: "Boutique Officielle — ESPACE GBA",
   description:
-    'Portez nos couleurs. Soutenez la formation. Maillots, packs et accessoires officiels du Groupement Bruche Ackerland.',
-}
+    "Portez nos couleurs. Soutenez la formation. Maillots, packs et accessoires officiels du Groupement Bruche Ackerland.",
+};
 
 export default function ShopPage() {
-  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'contact@gba-portal.fr'
-  const mailtoBase = `mailto:${contactEmail}`
+  const contactEmail =
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@gba-portal.fr";
+  const mailtoBase = `mailto:${contactEmail}`;
 
   return (
     <div className="min-h-screen bg-[#03040a] text-white pt-40 pb-24 overflow-hidden relative">
@@ -21,7 +22,7 @@ export default function ShopPage() {
           className="absolute inset-0 opacity-[0.03]"
           style={{
             backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
+            backgroundSize: "60px 60px",
           }}
         />
 
@@ -35,7 +36,10 @@ export default function ShopPage() {
         {/* Noise Texture for Depth */}
         <div
           className="absolute inset-0 opacity-[0.15] mix-blend-soft-light"
-          style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}
+          style={{
+            backgroundImage:
+              "url('https://grainy-gradients.vercel.app/noise.svg')",
+          }}
         />
       </div>
 
@@ -51,8 +55,9 @@ export default function ShopPage() {
           </h1>
           <div className="mt-12 flex flex-col md:flex-row gap-12 items-end justify-between">
             <p className="max-w-xl text-xl text-white/60 leading-relaxed">
-              Plus qu&apos;un simple maillot, une identité. Chaque achat soutient directement nos
-              équipes de jeunes et le développement du club.
+              Plus qu&apos;un simple maillot, une identité. Chaque achat
+              soutient directement nos équipes de jeunes et le développement du
+              club.
             </p>
             <div className="flex gap-4">
               <span className="rounded-full border border-white/10 bg-white/5 px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40">
@@ -66,21 +71,21 @@ export default function ShopPage() {
         <div className="mb-32 grid md:grid-cols-3 gap-8">
           {[
             {
-              id: '01',
-              title: 'Sélectionnez',
-              desc: 'Choisissez votre article, taille et quantité.',
+              id: "01",
+              title: "Sélectionnez",
+              desc: "Choisissez votre article, taille et quantité.",
               icon: ShoppingBag,
             },
             {
-              id: '02',
-              title: 'Commandez',
-              desc: 'Envoyez-nous un simple email avec vos choix.',
+              id: "02",
+              title: "Commandez",
+              desc: "Envoyez-nous un simple email avec vos choix.",
               icon: Package,
             },
             {
-              id: '03',
-              title: 'Récupérez',
-              desc: 'Retrait au club après confirmation.',
+              id: "03",
+              title: "Récupérez",
+              desc: "Retrait au club après confirmation.",
               icon: Truck,
             },
           ].map((step) => (
@@ -202,7 +207,7 @@ export default function ShopPage() {
                     href={`${mailtoBase}?subject=${encodeURIComponent(`Info Boutique — ${category.title}`)}`}
                     className="inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-white/40 group-hover:text-white transition-all"
                   >
-                    Explorer la gamme{' '}
+                    Explorer la gamme{" "}
                     <ArrowUpRight className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                   </a>
                 </div>
@@ -241,8 +246,8 @@ export default function ShopPage() {
             Prêt à porter <br /> l&apos;esprit GBA ?
           </h2>
           <p className="text-xl text-white/50 mb-12 max-w-xl mx-auto">
-            Envoyez votre demande par email. Nous confirmons la disponibilité et les modalités de
-            retrait sous 24h.
+            Envoyez votre demande par email. Nous confirmons la disponibilité et
+            les modalités de retrait sous 24h.
           </p>
           <a
             href={`mailto:${contactEmail}?subject=Commande Boutique GBA`}
@@ -253,5 +258,5 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

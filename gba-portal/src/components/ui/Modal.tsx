@@ -1,55 +1,62 @@
-'use client'
+"use client";
 
-import * as React from 'react'
-import { createPortal } from 'react-dom'
-import { cn } from '@/components/ui/cn'
-import { Button } from '@/components/ui/Button'
+import * as React from "react";
+import { createPortal } from "react-dom";
+import { cn } from "@/components/ui/cn";
+import { Button } from "@/components/ui/Button";
 
 interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  description?: string
-  children: React.ReactNode
-  className?: string
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+  className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, description, children, className }: ModalProps) {
-  const [mounted, setMounted] = React.useState(false)
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  description,
+  children,
+  className,
+}: ModalProps) {
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
+      if (e.key === "Escape" && isOpen) {
+        onClose();
       }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
-  if (!mounted || !isOpen) return null
+  if (!mounted || !isOpen) return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div
         className={cn(
-          'relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl animate-in zoom-in-95 duration-200',
-          className
+          "relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl animate-in zoom-in-95 duration-200",
+          className,
         )}
         role="dialog"
         aria-modal="true"
@@ -63,7 +70,9 @@ export function Modal({ isOpen, onClose, title, description, children, className
             >
               {title}
             </h2>
-            {description && <p className="mt-1 text-sm text-white/60">{description}</p>}
+            {description && (
+              <p className="mt-1 text-sm text-white/60">{description}</p>
+            )}
           </div>
           <Button
             variant="ghost"
@@ -78,6 +87,6 @@ export function Modal({ isOpen, onClose, title, description, children, className
         <div className="p-6 text-white/80">{children}</div>
       </div>
     </div>,
-    document.body
-  )
+    document.body,
+  );
 }

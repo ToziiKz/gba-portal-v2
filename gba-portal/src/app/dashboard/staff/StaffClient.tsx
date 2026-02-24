@@ -1,160 +1,185 @@
-'use client'
+"use client";
 
-import * as React from 'react'
+import * as React from "react";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Pill } from '@/components/ui/Pill'
-import { Modal } from '@/components/ui/Modal'
-import { usePermissions } from '@/components/PermissionsProvider'
-import { createApprovalRequest } from '@/lib/approvals'
-import { updateStaffAvailability, updateStaffDetails, type StaffMember } from './actions'
-import { staffPoles, staffRoles } from '@/lib/mocks/dashboardStaff'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Pill } from "@/components/ui/Pill";
+import { Modal } from "@/components/ui/Modal";
+import { usePermissions } from "@/components/PermissionsProvider";
+import { createApprovalRequest } from "@/lib/approvals";
+import {
+  updateStaffAvailability,
+  updateStaffDetails,
+  type StaffMember,
+} from "./actions";
+import { staffPoles, staffRoles } from "@/lib/mocks/dashboardStaff";
 
-type AvailabilityFilter = 'ok' | 'limited' | 'off' | 'all'
+type AvailabilityFilter = "ok" | "limited" | "off" | "all";
 
 function inputBaseClassName() {
-  return 'w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20'
+  return "w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 outline-none transition focus:border-white/25 focus:ring-2 focus:ring-white/20";
 }
 
 function availabilityVariant(a: string) {
-  if (a === 'ok') return 'success' as const
-  if (a === 'limited') return 'warning' as const
-  return 'neutral' as const
+  if (a === "ok") return "success" as const;
+  if (a === "limited") return "warning" as const;
+  return "neutral" as const;
 }
 
 function availabilityLabel(a: string) {
-  if (a === 'ok') return 'dispo'
-  if (a === 'limited') return 'limité'
-  return 'off'
+  if (a === "ok") return "dispo";
+  if (a === "limited") return "limité";
+  return "off";
 }
 
 function roleLabel(role: string) {
-  const match = staffRoles.find((r) => r.id === role)
-  return match ? match.label : role
+  const match = staffRoles.find((r) => r.id === role);
+  return match ? match.label : role;
 }
 
 function stats(members: StaffMember[]) {
-  let total = 0
-  let onDuty = 0
-  let off = 0
-  let limited = 0
+  let total = 0;
+  let onDuty = 0;
+  let off = 0;
+  let limited = 0;
 
   for (const m of members) {
-    total += 1
-    if (m.availability === 'ok') onDuty += 1
-    if (m.availability === 'off') off += 1
-    if (m.availability === 'limited') limited += 1
+    total += 1;
+    if (m.availability === "ok") onDuty += 1;
+    if (m.availability === "off") off += 1;
+    if (m.availability === "limited") limited += 1;
   }
 
-  return { total, onDuty, off, limited }
+  return { total, onDuty, off, limited };
 }
 
-export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] }) {
-  const { canEdit, role: userRole } = usePermissions()
-  const isAdmin = userRole === 'admin'
-  const [members, setMembers] = React.useState<StaffMember[]>(initialMembers)
-  const [, startTransition] = React.useTransition()
+export function StaffClient({
+  initialMembers,
+}: {
+  initialMembers: StaffMember[];
+}) {
+  const { canEdit, role: userRole } = usePermissions();
+  const isAdmin = userRole === "admin";
+  const [members, setMembers] = React.useState<StaffMember[]>(initialMembers);
+  const [, startTransition] = React.useTransition();
 
   React.useEffect(() => {
-    setMembers(initialMembers)
-  }, [initialMembers])
+    setMembers(initialMembers);
+  }, [initialMembers]);
 
   // Filters
-  const [query, setQuery] = React.useState('')
-  const [pole, setPole] = React.useState<string | 'all'>('all')
-  const [roleFilter, setRoleFilter] = React.useState<string | 'all'>('all')
-  const [availability, setAvailability] = React.useState<AvailabilityFilter>('all')
+  const [query, setQuery] = React.useState("");
+  const [pole, setPole] = React.useState<string | "all">("all");
+  const [roleFilter, setRoleFilter] = React.useState<string | "all">("all");
+  const [availability, setAvailability] =
+    React.useState<AvailabilityFilter>("all");
 
-  const [selectedId, setSelectedId] = React.useState<string | null>(null)
-  const [tab, setTab] = React.useState<'infos' | 'equipes' | 'actions'>('infos')
+  const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  const [tab, setTab] = React.useState<"infos" | "equipes" | "actions">(
+    "infos",
+  );
 
   // Modal State
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [editForm, setEditForm] = React.useState({ email: '', phone: '', note: '' })
-  const [pendingToast, setPendingToast] = React.useState<string | null>(null)
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editForm, setEditForm] = React.useState({
+    email: "",
+    phone: "",
+    note: "",
+  });
+  const [pendingToast, setPendingToast] = React.useState<string | null>(null);
 
   const filtered = React.useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = query.trim().toLowerCase();
 
     return members
-      .filter((m) => (pole === 'all' ? true : m.pole === pole))
-      .filter((m) => (roleFilter === 'all' ? true : m.role === roleFilter))
-      .filter((m) => (availability === 'all' ? true : m.availability === availability))
+      .filter((m) => (pole === "all" ? true : m.pole === pole))
+      .filter((m) => (roleFilter === "all" ? true : m.role === roleFilter))
+      .filter((m) =>
+        availability === "all" ? true : m.availability === availability,
+      )
       .filter((m) => {
-        if (!q) return true
+        if (!q) return true;
         const hay =
-          `${m.fullName} ${m.role} ${m.pole} ${m.teamsLabel} ${m.tags.join(' ')}`.toLowerCase()
-        return hay.includes(q)
+          `${m.fullName} ${m.role} ${m.pole} ${m.teamsLabel} ${m.tags.join(" ")}`.toLowerCase();
+        return hay.includes(q);
       })
-      .sort((a, b) => a.fullName.localeCompare(b.fullName))
-  }, [query, pole, roleFilter, availability, members])
+      .sort((a, b) => a.fullName.localeCompare(b.fullName));
+  }, [query, pole, roleFilter, availability, members]);
 
   const selected = React.useMemo(() => {
-    return filtered.find((m) => m.id === selectedId) ?? filtered[0] ?? null
-  }, [filtered, selectedId])
+    return filtered.find((m) => m.id === selectedId) ?? filtered[0] ?? null;
+  }, [filtered, selectedId]);
 
   React.useEffect(() => {
-    if (!selected) setSelectedId(null)
-    else setSelectedId(selected.id)
-  }, [selected])
+    if (!selected) setSelectedId(null);
+    else setSelectedId(selected.id);
+  }, [selected]);
 
-  const kpis = React.useMemo(() => stats(filtered), [filtered])
+  const kpis = React.useMemo(() => stats(filtered), [filtered]);
 
   function toggleOnDuty(id: string) {
-    const m = members.find((x) => x.id === id)
-    if (!m) return
-    const nextState = m.availability === 'ok' ? 'off' : 'ok'
+    const m = members.find((x) => x.id === id);
+    if (!m) return;
+    const nextState = m.availability === "ok" ? "off" : "ok";
 
     startTransition(async () => {
-      await updateStaffAvailability(id, nextState)
-    })
+      await updateStaffAvailability(id, nextState);
+    });
   }
 
   function handleEdit() {
-    if (!selected) return
+    if (!selected) return;
     setEditForm({
-      email: selected.email ?? '',
-      phone: selected.phone ?? '',
-      note: selected.note ?? '',
-    })
-    setIsEditing(true)
+      email: selected.email ?? "",
+      phone: selected.phone ?? "",
+      note: selected.note ?? "",
+    });
+    setIsEditing(true);
   }
 
   function handleSave() {
-    if (!selected) return
+    if (!selected) return;
 
     if (isAdmin) {
       startTransition(async () => {
-        const result = await updateStaffDetails(selected.id, editForm)
+        const result = await updateStaffDetails(selected.id, editForm);
         if (result.error) {
-          setPendingToast(`Erreur: ${result.error}`)
+          setPendingToast(`Erreur: ${result.error}`);
         } else {
-          setPendingToast('Modifications enregistrées')
+          setPendingToast("Modifications enregistrées");
         }
-        setIsEditing(false)
-        setTimeout(() => setPendingToast(null), 3000)
-      })
+        setIsEditing(false);
+        setTimeout(() => setPendingToast(null), 3000);
+      });
     } else {
       createApprovalRequest({
-        action: 'staff.update',
+        action: "staff.update",
         authorRole: userRole, // Should probably be properly typed but userRole can be anything
         payload: {
           id: selected.id,
           ...editForm,
         },
-      })
+      });
 
-      setPendingToast('Demande de modification envoyée aux admins.')
-      setIsEditing(false)
-      setTimeout(() => setPendingToast(null), 3000)
+      setPendingToast("Demande de modification envoyée aux admins.");
+      setIsEditing(false);
+      setTimeout(() => setPendingToast(null), 3000);
     }
   }
 
   return (
     <div className="grid gap-6">
       <div>
-        <p className="text-xs uppercase tracking-[0.6em] text-white/60">Module</p>
+        <p className="text-xs uppercase tracking-[0.6em] text-white/60">
+          Module
+        </p>
         <h2 className="mt-3 font-[var(--font-teko)] text-3xl font-black tracking-[0.06em] text-white md:text-4xl">
           Staff (annuaire)
         </h2>
@@ -209,7 +234,9 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
       <Card className="premium-card card-shell rounded-3xl">
         <CardHeader>
           <CardTitle>Recherche & filtres</CardTitle>
-          <CardDescription>Trouvez un membre par nom, pôle, rôle ou disponibilité.</CardDescription>
+          <CardDescription>
+            Trouvez un membre par nom, pôle, rôle ou disponibilité.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 md:grid-cols-4">
@@ -270,10 +297,10 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                 size="sm"
                 variant="secondary"
                 onClick={() => {
-                  setQuery('')
-                  setPole('all')
-                  setRoleFilter('all')
-                  setAvailability('all')
+                  setQuery("");
+                  setPole("all");
+                  setRoleFilter("all");
+                  setAvailability("all");
                 }}
               >
                 Réinitialiser
@@ -288,44 +315,50 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
         <Card className="premium-card card-shell rounded-3xl h-[600px] flex flex-col">
           <CardHeader className="shrink-0">
             <CardTitle>Effectif</CardTitle>
-            <CardDescription>{filtered.length} membre(s) trouvé(s)</CardDescription>
+            <CardDescription>
+              {filtered.length} membre(s) trouvé(s)
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-y-auto pr-2">
             {filtered.length === 0 ? (
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center">
-                <p className="text-sm font-semibold text-white">Aucun résultat</p>
+                <p className="text-sm font-semibold text-white">
+                  Aucun résultat
+                </p>
               </div>
             ) : (
               <ul className="grid gap-3">
                 {filtered.map((m) => {
-                  const isSelected = m.id === selected?.id
-                  const onDuty = m.availability === 'ok'
+                  const isSelected = m.id === selected?.id;
+                  const onDuty = m.availability === "ok";
 
                   return (
                     <li key={m.id}>
                       <button
                         type="button"
                         onClick={() => {
-                          setSelectedId(m.id)
-                          setTab('infos') // Reset tab on change
+                          setSelectedId(m.id);
+                          setTab("infos"); // Reset tab on change
                         }}
                         className={`group w-full rounded-2xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${
                           isSelected
-                            ? 'border-white/25 bg-white/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7'
+                            ? "border-white/25 bg-white/10"
+                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/7"
                         }`}
-                        aria-current={isSelected ? 'true' : undefined}
+                        aria-current={isSelected ? "true" : undefined}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-white">{m.fullName}</p>
+                            <p className="truncate font-semibold text-white">
+                              {m.fullName}
+                            </p>
                             <p className="mt-1 text-xs uppercase tracking-[0.28em] text-white/55">
                               {roleLabel(m.role)}
                             </p>
                           </div>
                           <div className="shrink-0 flex flex-col items-end gap-1">
                             <div
-                              className={`h-2 w-2 rounded-full ${onDuty ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]' : 'bg-white/20'}`}
+                              className={`h-2 w-2 rounded-full ${onDuty ? "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]" : "bg-white/20"}`}
                             />
                             <span className="text-[9px] uppercase tracking-wider text-white/30">
                               {m.pole}
@@ -334,7 +367,7 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                         </div>
                       </button>
                     </li>
-                  )
+                  );
                 })}
               </ul>
             )}
@@ -366,37 +399,43 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                     <h3 className="text-2xl font-black tracking-tight text-white">
                       {selected.fullName}
                     </h3>
-                    <p className="text-sm text-white/60">{roleLabel(selected.role)}</p>
+                    <p className="text-sm text-white/60">
+                      {roleLabel(selected.role)}
+                    </p>
                   </div>
                   <div className="text-right">
                     <Pill variant={availabilityVariant(selected.availability)}>
                       {availabilityLabel(selected.availability)}
                     </Pill>
                     <p className="mt-1 text-[10px] text-white/40">
-                      Maj: {selected.updatedAtLabel ?? '—'}
+                      Maj: {selected.updatedAtLabel ?? "—"}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-6 flex gap-6 overflow-x-auto pb-1px">
-                  {(['infos', 'equipes', 'actions'] as const).map((t) => (
+                  {(["infos", "equipes", "actions"] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTab(t)}
                       className={`relative pb-3 text-xs font-bold uppercase tracking-widest transition hover:text-white ${
                         tab === t
-                          ? 'text-white after:absolute after:bottom-[-1px] after:left-0 after:h-0.5 after:w-full after:bg-white'
-                          : 'text-white/40'
+                          ? "text-white after:absolute after:bottom-[-1px] after:left-0 after:h-0.5 after:w-full after:bg-white"
+                          : "text-white/40"
                       }`}
                     >
-                      {t === 'infos' ? 'Informations' : t === 'equipes' ? 'Équipes' : 'Actions'}
+                      {t === "infos"
+                        ? "Informations"
+                        : t === "equipes"
+                          ? "Équipes"
+                          : "Actions"}
                     </button>
                   ))}
                 </div>
               </div>
 
               <CardContent className="flex-1 overflow-y-auto pt-6">
-                {tab === 'infos' && (
+                {tab === "infos" && (
                   <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
                       <p className="text-xs uppercase tracking-[0.35em] text-white/55">
@@ -406,24 +445,28 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                         <div className="flex justify-between">
                           <dt className="text-sm text-white/60">Email</dt>
                           <dd className="text-sm font-semibold text-white">
-                            {selected.email ?? '—'}
+                            {selected.email ?? "—"}
                           </dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-sm text-white/60">Téléphone</dt>
                           <dd className="text-sm font-semibold text-white">
-                            {selected.phone ?? '—'}
+                            {selected.phone ?? "—"}
                           </dd>
                         </div>
                       </dl>
                     </div>
 
                     <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-4">
-                      <p className="text-xs uppercase tracking-[0.35em] text-white/55">Contexte</p>
+                      <p className="text-xs uppercase tracking-[0.35em] text-white/55">
+                        Contexte
+                      </p>
                       <dl className="grid gap-3">
                         <div className="flex justify-between">
                           <dt className="text-sm text-white/60">Pôle</dt>
-                          <dd className="text-sm font-semibold text-white">{selected.pole}</dd>
+                          <dd className="text-sm font-semibold text-white">
+                            {selected.pole}
+                          </dd>
                         </div>
                         <div className="flex justify-between">
                           <dt className="text-sm text-white/60">Équipes</dt>
@@ -458,16 +501,20 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                   </div>
                 )}
 
-                {tab === 'equipes' && (
+                {tab === "equipes" && (
                   <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-                      <p className="text-white/50 text-sm">Ce membre intervient sur :</p>
-                      <p className="text-2xl font-black text-white mt-2">{selected.teamsLabel}</p>
+                      <p className="text-white/50 text-sm">
+                        Ce membre intervient sur :
+                      </p>
+                      <p className="text-2xl font-black text-white mt-2">
+                        {selected.teamsLabel}
+                      </p>
                     </div>
                   </div>
                 )}
 
-                {tab === 'actions' && (
+                {tab === "actions" && (
                   <div className="grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                     {canEdit ? (
                       <div className="grid gap-4">
@@ -476,13 +523,21 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                             <p className="text-sm font-bold text-white">
                               Statut &quot;En Service&quot;
                             </p>
-                            <p className="text-xs text-white/50">Déclare la présence sur site</p>
+                            <p className="text-xs text-white/50">
+                              Déclare la présence sur site
+                            </p>
                           </div>
                           <Button
-                            variant={selected.availability === 'ok' ? 'secondary' : 'ghost'}
+                            variant={
+                              selected.availability === "ok"
+                                ? "secondary"
+                                : "ghost"
+                            }
                             onClick={() => toggleOnDuty(selected.id)}
                           >
-                            {selected.availability === 'ok' ? 'Désactiver' : 'Activer'}
+                            {selected.availability === "ok"
+                              ? "Désactiver"
+                              : "Activer"}
                           </Button>
                         </div>
 
@@ -496,7 +551,9 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
                       </div>
                     ) : (
                       <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
-                        <p className="text-sm text-white/60">Mode lecture seule.</p>
+                        <p className="text-sm text-white/60">
+                          Mode lecture seule.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -515,10 +572,14 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
       >
         <div className="grid gap-4">
           <label className="grid gap-1.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-white/60">Email</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-white/60">
+              Email
+            </span>
             <input
               value={editForm.email}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, email: e.target.value }))
+              }
               className={inputBaseClassName()}
               placeholder="email@example.com"
             />
@@ -530,7 +591,9 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
             </span>
             <input
               value={editForm.phone}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, phone: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, phone: e.target.value }))
+              }
               className={inputBaseClassName()}
               placeholder="+33 6..."
             />
@@ -542,7 +605,9 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
             </span>
             <textarea
               value={editForm.note}
-              onChange={(e) => setEditForm((prev) => ({ ...prev, note: e.target.value }))}
+              onChange={(e) =>
+                setEditForm((prev) => ({ ...prev, note: e.target.value }))
+              }
               className={inputBaseClassName()}
               rows={3}
               placeholder="Note visible uniquement par le staff..."
@@ -560,5 +625,5 @@ export function StaffClient({ initialMembers }: { initialMembers: StaffMember[] 
         </div>
       </Modal>
     </div>
-  )
+  );
 }
