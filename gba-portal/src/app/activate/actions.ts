@@ -64,11 +64,12 @@ export async function activateCoachAccount(
     };
   }
 
+  const newUserId = signUp.user.id;
   const usedAt = new Date().toISOString();
 
   const { data: claimedInvite, error: markUsedErr } = await supabase
     .from("coach_invitations")
-    .update({ used_at: usedAt, used_by: signUp.user.id })
+    .update({ used_at: usedAt, used_by: newUserId })
     .eq("id", inv.id)
     .eq("token_hash", tokenHash)
     .is("used_at", null)
@@ -84,10 +85,18 @@ export async function activateCoachAccount(
     };
   }
 
-  const { error: profileErr } = await supabase
-    .from("profiles")
-    .update({ full_name: fullName, role: inv.role })
-    .eq("id", signUp.user.id);
+  const { error: profileErr } = await supabase.from("profiles").upsert(
+    [
+      {
+        id: newUserId,
+        email: inv.email,
+        full_name: fullName,
+        role: inv.role,
+        is_active: true,
+      },
+    ],
+    { onConflict: "id" },
+  );
 
   if (profileErr) {
     return {
@@ -96,12 +105,27 @@ export async function activateCoachAccount(
     };
   }
 
-  // 3. Auto-assignation des équipes si renseignées dans l'invitation
+  // Auto-assignation des équipes (modèle M2M)
   if (inv.target_team_ids && inv.target_team_ids.length > 0) {
-    await supabase
-      .from("teams")
-      .update({ coach_id: signUp.user.id })
-      .in("id", inv.target_team_ids);
+    const rows = (inv.target_team_ids as string[]).map(
+      (teamId: string, index: number) => ({
+        team_id: teamId,
+        profile_id: newUserId,
+        role_in_team: index === 0 ? "coach" : "assistant",
+        is_primary: index === 0,
+      }),
+    );
+
+    const { error: staffAssignErr } = await supabase
+      .from("team_staff")
+      .upsert(rows, { onConflict: "team_id,profile_id" });
+
+    if (staffAssignErr) {
+      return {
+        ok: false as const,
+        error: "Compte créé mais assignation équipe impossible.",
+      };
+    }
   }
 
   return { ok: true as const };

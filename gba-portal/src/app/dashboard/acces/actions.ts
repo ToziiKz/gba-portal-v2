@@ -187,20 +187,32 @@ export async function setCoachTeams(formData: FormData) {
 
   if (!coachId) throw new Error("coachId manquant");
 
-  const { error: rpcErr } = await supabase.rpc(
-    "admin_update_profile_and_teams",
-    {
-      p_user_id: coachId,
-      p_role: "coach",
-      p_is_active: true,
-      p_team_ids: teamIds,
-    },
-  );
+  const { error: clearErr } = await supabase
+    .from("team_staff")
+    .delete()
+    .eq("profile_id", coachId);
 
-  if (rpcErr) {
+  if (clearErr) {
     throw new Error(
-      "Impossible d’affecter les équipes coach: " + rpcErr.message,
+      "Impossible de réinitialiser les affectations coach: " + clearErr.message,
     );
+  }
+
+  if (teamIds.length > 0) {
+    const rows = teamIds.map((teamId, index) => ({
+      team_id: teamId,
+      profile_id: coachId,
+      role_in_team: index === 0 ? "coach" : "assistant",
+      is_primary: index === 0,
+    }));
+
+    const { error: insErr } = await supabase.from("team_staff").insert(rows);
+
+    if (insErr) {
+      throw new Error(
+        "Impossible d’affecter les équipes coach: " + insErr.message,
+      );
+    }
   }
 
   await logAccessEvent(

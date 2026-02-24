@@ -70,8 +70,13 @@ export default async function DashboardCoachAccessPage({
   // 4. Équipes
   const { data: teams } = await supabase
     .from("teams")
-    .select("id, name, coach_id, category, pole")
+    .select("id, name, category, pole")
     .order("name", { ascending: true });
+
+  // 5. Assignations staff ↔ équipes (M2M)
+  const { data: staffAssignments } = await supabase
+    .from("team_staff")
+    .select("team_id, profile_id, role_in_team, is_primary");
 
   return (
     <div className="space-y-8 pb-10">
@@ -322,8 +327,20 @@ export default async function DashboardCoachAccessPage({
 
             <div className="space-y-6">
               {users?.map((user) => {
-                const assignedTeams = (teams ?? []).filter(
-                  (t) => t.coach_id === user.id,
+                const userAssignments = (staffAssignments ?? []).filter(
+                  (a) => a.profile_id === user.id,
+                );
+                const assignmentByTeamId = new Map(
+                  userAssignments.map((a) => [
+                    String(a.team_id),
+                    {
+                      role_in_team: String(a.role_in_team ?? "assistant"),
+                      is_primary: Boolean(a.is_primary),
+                    },
+                  ]),
+                );
+                const assignedTeams = (teams ?? []).filter((t) =>
+                  assignmentByTeamId.has(t.id),
                 );
                 const isActive = user.is_active !== false;
 
@@ -405,31 +422,57 @@ export default async function DashboardCoachAccessPage({
                                   Équipes assignées ({assignedTeams.length})
                                 </p>
                               </div>
-                              <div className="p-2 max-h-40 overflow-y-auto">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                                  {(teams ?? []).map((team) => (
-                                    <label
+                              <div className="p-2 max-h-72 overflow-y-auto space-y-2">
+                                {(teams ?? []).map((team) => {
+                                  const assigned = assignmentByTeamId.has(team.id);
+                                  const assignment = assignmentByTeamId.get(team.id);
+                                  const roleInTeam = assignment?.role_in_team ?? "assistant";
+                                  const isPrimary = assignment?.is_primary ?? false;
+
+                                  return (
+                                    <div
                                       key={team.id}
-                                      className={`group relative flex items-center gap-1.5 p-2 rounded-lg border transition-all cursor-pointer select-none ${team.coach_id === user.id ? "bg-blue-600 border-blue-600 text-white shadow-sm" : "bg-white border-slate-200 text-slate-500 hover:border-blue-200"}`}
+                                      className="rounded-lg border border-slate-200 bg-white p-2"
                                     >
-                                      <input
-                                        type="checkbox"
-                                        name="teamIds"
-                                        value={team.id}
-                                        defaultChecked={
-                                          team.coach_id === user.id
-                                        }
-                                        className="sr-only"
-                                      />
-                                      <span className="text-[8px] font-black uppercase tracking-tighter truncate">
-                                        {team.name}
-                                      </span>
-                                      {team.coach_id === user.id && (
-                                        <CheckCircle2 className="h-2 w-2 text-white" />
-                                      )}
-                                    </label>
-                                  ))}
-                                </div>
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          name={`assign_${team.id}`}
+                                          defaultChecked={assigned}
+                                          className="h-3.5 w-3.5 accent-blue-600"
+                                        />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 truncate">
+                                          {team.name}
+                                        </span>
+                                        {assigned && (
+                                          <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-blue-600" />
+                                        )}
+                                      </div>
+
+                                      <div className="mt-2 grid grid-cols-2 gap-2 pl-6">
+                                        <select
+                                          name={`role_${team.id}`}
+                                          defaultValue={roleInTeam}
+                                          className="h-8 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black uppercase tracking-wide text-slate-700"
+                                        >
+                                          <option value="coach">Coach</option>
+                                          <option value="assistant">Assistant</option>
+                                          <option value="staff">Staff</option>
+                                        </select>
+
+                                        <label className="flex items-center gap-2 h-8 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black uppercase tracking-wide text-slate-700">
+                                          <input
+                                            type="checkbox"
+                                            name={`primary_${team.id}`}
+                                            defaultChecked={isPrimary}
+                                            className="h-3.5 w-3.5 accent-emerald-600"
+                                          />
+                                          Principal
+                                        </label>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}

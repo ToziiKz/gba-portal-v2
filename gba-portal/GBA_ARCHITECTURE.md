@@ -261,6 +261,12 @@ Pour chaque nouvelle fonctionnalité:
 - Interdiction de fallback implicite de rôle en production
 - Si profil absent/invalide: redirection contrôlée + message explicite
 
+### Rôles d’équipe (team_staff) — convention GBA
+- `coach` : 1 principal max par équipe (`is_primary=true`)
+- `assistant` : 0 à 2 par équipe
+- `staff` : 0 à 3 par équipe
+- Modèle relationnel: many-to-many (`team_staff`) entre `profiles` et `teams`
+
 ---
 
 ## 15) Checklist QA pré-livraison (obligatoire avant validation humaine)
