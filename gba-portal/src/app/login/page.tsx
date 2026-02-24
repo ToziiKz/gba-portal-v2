@@ -48,7 +48,8 @@ export default async function LoginPage({
 
         {params.no_profile === "1" ? (
           <div className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-100">
-            Compte authentifié, mais aucun profil n&apos;est trouvé dans la table
+            Compte authentifié, mais aucun profil n&apos;est trouvé dans la
+            table
             <code className="mx-1">profiles</code>. Ajoute ton utilisateur dans
             Supabase pour accéder au dashboard.
           </div>
