@@ -165,7 +165,7 @@ export async function createPlanningSession(
 
   if (error) return { message: "Erreur demande validation" };
 
-  revalidatePath("/dashboard/validations");
+  revalidatePath("/dashboard/planning");
   return { success: true };
 }
 
@@ -226,6 +226,6 @@ export async function deletePlanningSession(formData: FormData): Promise<void> {
 
   if (error) throw new Error("Erreur demande validation");
 
-  revalidatePath("/dashboard/validations");
+  revalidatePath("/dashboard/planning");
   return;
 }

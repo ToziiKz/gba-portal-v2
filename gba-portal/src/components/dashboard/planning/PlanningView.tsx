@@ -13,7 +13,6 @@ import {
 
 import { CreatePlanningSessionModal } from "./CreatePlanningSessionModal";
 import { deletePlanningSession } from "@/app/dashboard/planning/actions";
-import { RosterChecklist } from "@/components/dashboard/RosterChecklist";
 
 const planningDays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"] as const;
 type PlanningDay = (typeof planningDays)[number];
@@ -149,9 +148,6 @@ export function PlanningView({ sessions, teams }: Props) {
   const [selectedSession, setSelectedSession] = React.useState<Session | null>(
     null,
   );
-  const [modalView, setModalView] = React.useState<"details" | "attendance">(
-    "details",
-  );
   const [createOpen, setCreateOpen] = React.useState(false);
 
   const weekDays = React.useMemo(
@@ -180,10 +176,6 @@ export function PlanningView({ sessions, teams }: Props) {
     "Évènements",
     "Réunion",
   ];
-
-  React.useEffect(() => {
-    if (!selectedSession) setModalView("details");
-  }, [selectedSession]);
 
   const filtered = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -557,94 +549,76 @@ export function PlanningView({ sessions, teams }: Props) {
         }
       >
         {selectedSession ? (
-          modalView === "attendance" && selectedSession.team ? (
-            <RosterChecklist
-              sessionId={selectedSession.id}
-              teamId={selectedSession.team.id}
-              teamLabel={`${selectedSession.team.category} • ${selectedSession.team.name}`}
-              onBack={() => setModalView("details")}
-              onClose={() => setSelectedSession(null)}
-            />
-          ) : (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-slate-500">
-                    <MapPin className="h-4 w-4" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest">
-                      Terrain
-                    </p>
-                  </div>
-                  <p className="text-lg font-black uppercase tracking-tight text-slate-900">
-                    {selectedSession.location.toLowerCase().includes("synth")
-                      ? "Synthétique"
-                      : selectedSession.location.toLowerCase().includes("herbe")
-                        ? "Herbe"
-                        : selectedSession.location
-                              .toLowerCase()
-                              .includes("clubhouse")
-                          ? "Clubhouse"
-                          : "Non précisé"}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500">
-                    {selectedSession.location}
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-slate-500">
+                  <MapPin className="h-4 w-4" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">
+                    Terrain
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-2 flex items-center gap-2 text-slate-500">
-                    <User className="h-4 w-4" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest">
-                      Coach
-                    </p>
-                  </div>
-                  <p className="text-lg font-black uppercase tracking-tight text-slate-900">
-                    {selectedSession.staff?.length
-                      ? selectedSession.staff.join(", ")
-                      : "Non précisé"}
-                  </p>
-                </div>
+                <p className="text-lg font-black uppercase tracking-tight text-slate-900">
+                  {selectedSession.location.toLowerCase().includes("synth")
+                    ? "Synthétique"
+                    : selectedSession.location.toLowerCase().includes("herbe")
+                      ? "Herbe"
+                      : selectedSession.location
+                            .toLowerCase()
+                            .includes("clubhouse")
+                        ? "Clubhouse"
+                        : "Non précisé"}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {selectedSession.location}
+                </p>
               </div>
-
-              {selectedSession.note ? (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                    Note
-                  </p>
-                  <p className="text-sm italic leading-relaxed text-slate-700">
-                    &quot;{selectedSession.note}&quot;
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-slate-500">
+                  <User className="h-4 w-4" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">
+                    Coach
                   </p>
                 </div>
-              ) : null}
-
-              <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-4">
-                {selectedSession.team ? (
-                  <Button
-                    onClick={() => setModalView("attendance")}
-                    className="bg-blue-600 text-[10px] font-black uppercase tracking-widest text-white hover:bg-blue-700"
-                  >
-                    Gérer les présences
-                  </Button>
-                ) : null}
-                <form action={deletePlanningSession}>
-                  <input type="hidden" name="id" value={selectedSession.id} />
-                  <Button
-                    variant="secondary"
-                    type="submit"
-                    className="border-rose-200 text-[10px] font-black uppercase tracking-widest text-rose-700 hover:bg-rose-50"
-                  >
-                    Supprimer
-                  </Button>
-                </form>
-                <Button
-                  variant="secondary"
-                  onClick={() => setSelectedSession(null)}
-                  className="text-[10px] font-black uppercase tracking-widest"
-                >
-                  Fermer
-                </Button>
+                <p className="text-lg font-black uppercase tracking-tight text-slate-900">
+                  {selectedSession.staff?.length
+                    ? selectedSession.staff.join(", ")
+                    : "Non précisé"}
+                </p>
               </div>
             </div>
-          )
+
+            {selectedSession.note ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  Note
+                </p>
+                <p className="text-sm italic leading-relaxed text-slate-700">
+                  &quot;{selectedSession.note}&quot;
+                </p>
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-4">
+              <form action={deletePlanningSession}>
+                <input type="hidden" name="id" value={selectedSession.id} />
+                <Button
+                  variant="secondary"
+                  type="submit"
+                  className="border-rose-200 text-[10px] font-black uppercase tracking-widest text-rose-700 hover:bg-rose-50"
+                >
+                  Supprimer
+                </Button>
+              </form>
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedSession(null)}
+                className="text-[10px] font-black uppercase tracking-widest"
+              >
+                Fermer
+              </Button>
+            </div>
+          </div>
         ) : null}
       </Modal>
 

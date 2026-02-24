@@ -33,27 +33,6 @@ export const navItems: NavItem[] = [
     minRole: "coach",
   },
   {
-    label: "Compositions",
-    href: "/dashboard/tactique",
-    status: "ready",
-    note: "terrain & export image",
-    minRole: "coach",
-  },
-  {
-    label: "Rapports",
-    href: "/dashboard/rapports",
-    status: "ready",
-    note: "KPIs + alertes",
-    minRole: "coach", // Was viewer, now minimal role is coach
-  },
-  {
-    label: "Relances",
-    href: "/dashboard/relances",
-    status: "ready",
-    note: "backlog actionnable",
-    minRole: "resp_sportif", // Ex-staff
-  },
-  {
     label: "Équipes",
     href: "/dashboard/equipes",
     status: "ready",
@@ -79,33 +58,6 @@ export const navItems: NavItem[] = [
     minRole: "coach",
   },
   {
-    label: "Présences",
-    href: "/dashboard/presences",
-    status: "ready",
-    note: "par séance",
-    minRole: "coach",
-  },
-  {
-    label: "Équipements",
-    href: "/dashboard/equipements",
-    status: "ready",
-    minRole: "resp_equipements", // Ex-staff
-  },
-  {
-    label: "Stock & matériel",
-    href: "/dashboard/stock",
-    status: "ready",
-    note: "inventaire",
-    minRole: "resp_equipements", // Ex-staff
-  },
-  {
-    label: "Annuaire Staff",
-    href: "/dashboard/staff",
-    status: "ready",
-    note: "contacts & dispo",
-    minRole: "admin",
-  },
-  {
     label: "Accès & Rôles",
     href: "/dashboard/acces",
     status: "ready",
@@ -113,10 +65,6 @@ export const navItems: NavItem[] = [
     minRole: "admin",
   },
 ];
-
-// Specific restricted views for Coach (whitelist approach if needed, else role based)
-// Since we removed 'viewer', coach is the base.
-// We can rely on minRole mostly now.
 
 export function canAccess(role: DashboardRole, item: NavItem) {
   const min = item.minRole ?? "coach";

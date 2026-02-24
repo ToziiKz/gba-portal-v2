@@ -8,8 +8,6 @@ import {
   LayoutDashboard,
   Users,
   Calendar,
-  CheckSquare,
-  Trophy,
   ShieldCheck,
   Settings,
   ChevronRight,
@@ -29,11 +27,9 @@ const iconMap: Record<string, LucideIcon> = {
   "/dashboard": LayoutDashboard,
   "/dashboard/effectif": Users,
   "/dashboard/planning": Calendar,
-  "/dashboard/presences": CheckSquare,
-  "/dashboard/match": Trophy,
   "/dashboard/acces": ShieldCheck,
   "/dashboard/joueurs": Users,
-  "/dashboard/equipes": Trophy,
+  "/dashboard/equipes": Users,
 };
 
 export function DashboardSidebar({ role }: Props) {
@@ -42,7 +38,6 @@ export function DashboardSidebar({ role }: Props) {
 
   return (
     <aside className="fixed left-0 top-0 z-50 hidden h-full w-64 shrink-0 flex-col border-r border-[color:var(--ui-border)] bg-white lg:flex shadow-sm">
-      {/* Brand Header */}
       <div className="flex h-24 items-center justify-center px-4 border-b border-slate-50">
         <Link
           href="/dashboard"
@@ -69,7 +64,6 @@ export function DashboardSidebar({ role }: Props) {
         </Link>
       </div>
 
-      {/* Navigation Main */}
       <nav className="flex-1 overflow-y-auto px-4 py-8">
         <p className="px-4 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-4">
           Menu Principal
@@ -103,7 +97,6 @@ export function DashboardSidebar({ role }: Props) {
         </ul>
       </nav>
 
-      {/* Footer Tools */}
       <div className="p-4 space-y-4">
         <div className="rounded-3xl bg-slate-50 p-6 border border-slate-100 relative overflow-hidden group">
           <div className="absolute top-0 right-0 -mr-4 -mt-4 h-16 w-16 bg-blue-100 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500" />
