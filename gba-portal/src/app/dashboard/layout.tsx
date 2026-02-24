@@ -49,23 +49,30 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (profile?.is_active === false) {
+  if (!profile) {
+    redirect("/login?no_profile=1");
+  }
+
+  if (profile.is_active === false) {
     redirect("/login?disabled=1");
   }
 
-  const rawRole = String(profile?.role ?? "coach").trim();
-  const role = VALID_ROLES.has(rawRole)
-    ? (rawRole as DashboardRole)
-    : ("coach" as DashboardRole);
+  const rawRole = String(profile.role ?? "").trim();
+
+  if (!VALID_ROLES.has(rawRole)) {
+    redirect("/login?role_invalid=1");
+  }
+
+  const role = rawRole as DashboardRole;
 
   const userProfile = {
     id: user.id,
-    email: profile?.email ?? user.email ?? null,
+    email: profile.email ?? user.email ?? null,
     full_name:
-      profile?.full_name ??
+      profile.full_name ??
       (user.user_metadata?.full_name as string | undefined) ??
       null,
-    is_active: profile?.is_active ?? true,
+    is_active: profile.is_active ?? true,
     role,
   };
 
