@@ -115,6 +115,7 @@
   - **Effectif** (`/dashboard/effectif`)
   - **Joueurs** (`/dashboard/joueurs`)
   - **Planning** (`/dashboard/planning`)
+- Gestion staff↔équipes en **many-to-many** via `team_staff` (coach/assistant/staff + principal)
 
 ### Nettoyage déjà effectué (historique récent)
 - Suppression de nombreux modules hors scope/non finis
@@ -252,9 +253,18 @@ Pour chaque nouvelle fonctionnalité:
 - Pas de gouvernance accès globale
 - Écriture encadrée selon règles métier et policies
 
-### `resp_pole`, `resp_sportif`, `resp_equipements` (compatibilité code)
-- Rôles encore supportés dans le code de navigation/scope
-- À consolider selon nouvelle stratégie produit (si non utilisés, décommission planifié)
+### Rôles actifs en production (phase actuelle)
+- `admin`
+- `coach`
+
+### Rôles prévus (future activation)
+- `resp_pole`
+- `resp_sportif`
+- `resp_admin`
+- `resp_equipements`
+- (éventuels modérateurs/admins secondaires)
+
+> Tant que non activés produit, les écrans d’administration n’exposent que `admin` et `coach` pour éviter les ambiguïtés.
 
 ### Contrat d’intégrité rôle
 - Source de vérité = `public.profiles.role`
@@ -302,7 +312,7 @@ Pour chaque nouvelle fonctionnalité:
 ## 16) TODO stratégique (prochaine phase)
 
 1. Stabiliser définitivement RBAC/RLS `profiles` + parcours login.
-2. Vérifier cohérence stricte des rôles affichés dans dashboard.
+2. Finaliser UX d’assignation staff par équipe (rôle + principal) et feedback visuel fin.
 3. Assainir `README.md` (actuellement obsolète sur certaines dépendances/modules supprimés).
 4. Uniformiser emplacement des migrations (éviter double convention dossier).
 5. Préparer roadmap CRM v2 (modules à réintégrer proprement, un par un).
@@ -313,3 +323,4 @@ Pour chaque nouvelle fonctionnalité:
 
 - **2026-02-24** : Création initiale complète (cartographie + standards + état réel).
 - **2026-02-24** : Ajout des matrices opérationnelles (route→DB, rôles→permissions) + checklist QA pré-livraison.
+- **2026-02-24** : Mise à jour modèle staff M2M (`team_staff`) + clarification rôles actifs (`admin`, `coach`) et sous-rôles équipe (`coach`, `assistant`, `staff`).

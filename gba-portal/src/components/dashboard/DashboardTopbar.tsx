@@ -16,6 +16,14 @@ type Props = {
   onOpenSpotlight: () => void;
 };
 
+const roleLabelMap: Record<DashboardRole, string> = {
+  admin: "Admin",
+  coach: "Coach",
+  resp_pole: "Resp. Pôle",
+  resp_sportif: "Resp. Sportif",
+  resp_equipements: "Resp. Équipements",
+};
+
 export function DashboardTopbar({ role, userName, onOpenSpotlight }: Props) {
   const router = useRouter();
   const pathname = usePathname();
@@ -106,7 +114,7 @@ export function DashboardTopbar({ role, userName, onOpenSpotlight }: Props) {
               <span
                 className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${role === "admin" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}
               >
-                {role}
+                {roleLabelMap[role] ?? role}
               </span>
               {assignedTeamsLabel && (
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">

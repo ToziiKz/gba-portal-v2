@@ -10,7 +10,6 @@ import {
   Mail,
   Users,
   CheckCircle2,
-  Lock,
   Save,
   Trash2,
 } from "lucide-react";
@@ -196,7 +195,6 @@ export default async function DashboardCoachAccessPage({
                     className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 outline-none appearance-none cursor-pointer"
                   >
                     <option value="coach">COACH</option>
-                    <option value="staff">STAFF</option>
                     <option value="admin">ADMIN</option>
                   </select>
                 </div>
@@ -387,7 +385,6 @@ export default async function DashboardCoachAccessPage({
                                   className="bg-transparent text-[10px] font-black uppercase text-slate-900 outline-none cursor-pointer"
                                 >
                                   <option value="admin">Admin</option>
-                                  <option value="staff">Staff</option>
                                   <option value="coach">Coach</option>
                                 </select>
                               </div>
@@ -424,10 +421,16 @@ export default async function DashboardCoachAccessPage({
                               </div>
                               <div className="p-2 max-h-72 overflow-y-auto space-y-2">
                                 {(teams ?? []).map((team) => {
-                                  const assigned = assignmentByTeamId.has(team.id);
-                                  const assignment = assignmentByTeamId.get(team.id);
-                                  const roleInTeam = assignment?.role_in_team ?? "assistant";
-                                  const isPrimary = assignment?.is_primary ?? false;
+                                  const assigned = assignmentByTeamId.has(
+                                    team.id,
+                                  );
+                                  const assignment = assignmentByTeamId.get(
+                                    team.id,
+                                  );
+                                  const roleInTeam =
+                                    assignment?.role_in_team ?? "assistant";
+                                  const isPrimary =
+                                    assignment?.is_primary ?? false;
 
                                   return (
                                     <div
@@ -456,7 +459,9 @@ export default async function DashboardCoachAccessPage({
                                           className="h-8 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black uppercase tracking-wide text-slate-700"
                                         >
                                           <option value="coach">Coach</option>
-                                          <option value="assistant">Assistant</option>
+                                          <option value="assistant">
+                                            Assistant
+                                          </option>
                                           <option value="staff">Staff</option>
                                         </select>
 
@@ -474,15 +479,6 @@ export default async function DashboardCoachAccessPage({
                                   );
                                 })}
                               </div>
-                            </div>
-                          )}
-
-                          {user.role === "staff" && (
-                            <div className="bg-amber-50/30 rounded-2xl p-4 border border-amber-100 border-dashed flex items-center gap-3">
-                              <Lock className="h-4 w-4 text-amber-400" />
-                              <p className="text-[10px] text-amber-800/60 font-black uppercase tracking-widest">
-                                Droits STAFF : Gestion Boutique & Finances
-                              </p>
                             </div>
                           )}
                         </form>
