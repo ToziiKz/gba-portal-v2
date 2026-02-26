@@ -34,26 +34,22 @@ export async function activateCoachAccount(
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const supabase = await createClient();
 
-  const { data: inv, error: invErr } = await supabase
-    .from("coach_invitations")
-    .select("*")
-    .eq("id", invitationId)
-    .eq("token_hash", tokenHash)
-    .single();
+  const { data: invPreview } = await supabase.rpc(
+    "get_invitation_activation_preview",
+    {
+      p_invitation_id: invitationId,
+      p_token_hash: tokenHash,
+    },
+  );
 
-  if (invErr || !inv) {
-    return { ok: false as const, error: "Lien invalide." };
-  }
+  const inv = (invPreview?.[0] ?? null) as {
+    id: string;
+    full_name: string;
+    email: string;
+  } | null;
 
-  if (inv.used_at) {
-    return { ok: false as const, error: "Ce lien a déjà été utilisé." };
-  }
-
-  if (new Date(inv.expires_at).getTime() < Date.now()) {
-    return {
-      ok: false as const,
-      error: "Lien expiré. Demandez une nouvelle invitation.",
-    };
+  if (!inv) {
+    return { ok: false as const, error: "Lien invalide ou expiré." };
   }
 
   const invitationFullName = String(inv.full_name ?? "").trim();

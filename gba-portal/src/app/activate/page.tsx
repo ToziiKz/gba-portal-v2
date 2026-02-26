@@ -24,12 +24,19 @@ export default async function ActivatePage({
       .update(String(params.token))
       .digest("hex");
 
-    const { data: inv } = await supabase
-      .from("coach_invitations")
-      .select("full_name, email, target_team_ids, used_at, expires_at")
-      .eq("id", params.inv)
-      .eq("token_hash", tokenHash)
-      .single();
+    const { data: invPreview } = await supabase.rpc(
+      "get_invitation_activation_preview",
+      {
+        p_invitation_id: params.inv,
+        p_token_hash: tokenHash,
+      },
+    );
+
+    const inv = (invPreview?.[0] ?? null) as {
+      full_name: string;
+      email: string;
+      target_team_ids: string[];
+    } | null;
 
     if (inv?.full_name) {
       initialFullName = inv.full_name;
