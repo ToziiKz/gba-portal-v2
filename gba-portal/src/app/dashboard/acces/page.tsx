@@ -1,12 +1,14 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { requireRole } from "@/lib/dashboard/authz";
 import {
   regenerateCoachInvitation,
   createDirectInvitation,
   deleteCoachInvitation,
 } from "./actions";
 import { updateUserProfile, deleteUserProfile } from "./update-actions";
+import { DeleteProfileSubmitButton } from "./DeleteProfileSubmitButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import {
@@ -17,7 +19,6 @@ import {
   Users,
   CheckCircle2,
   Save,
-  Trash2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,31 +45,22 @@ export default async function DashboardCoachAccessPage({
 }: {
   searchParams?: Promise<Params>;
 }) {
-  const supabase = await createClient();
   const params = (await searchParams) ?? {};
 
-  const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
-
-  if (!authUser) {
-    redirect("/login");
-  }
-
-  const { data: authProfile } = await supabase
-    .from("profiles")
-    .select("role, is_active")
-    .eq("id", authUser.id)
-    .single();
-
-  if (authProfile?.is_active === false) {
-    redirect("/login?disabled=1");
-  }
-
-  if (String(authProfile?.role ?? "") !== "admin") {
+  try {
+    await requireRole("admin");
+  } catch (err) {
+    const message = String((err as Error)?.message ?? "");
+    if (message.toLowerCase().includes("not authenticated")) {
+      redirect("/login");
+    }
+    if (message.toLowerCase().includes("suspendu")) {
+      redirect("/login?disabled=1");
+    }
     redirect("/dashboard");
   }
 
+  const supabase = await createClient();
   const statusFilter = params.status ?? "pending";
 
   // 1. Charger les profils existants
@@ -624,22 +616,7 @@ export default async function DashboardCoachAccessPage({
                               name="userId"
                               value={user.id}
                             />
-                            <button
-                              type="submit"
-                              onClick={(e) => {
-                                if (
-                                  !confirm(
-                                    "Confirmer la suppression totale de ce profil ? Cette action est irréversible.",
-                                  )
-                                ) {
-                                  e.preventDefault();
-                                }
-                              }}
-                              className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-300 hover:text-red-500 transition-all group px-2"
-                            >
-                              <Trash2 className="h-3.5 w-3.5 group-hover:scale-110 transition-transform" />
-                              Supprimer le profil
-                            </button>
+                            <DeleteProfileSubmitButton />
                           </form>
                         </div>
                       </div>

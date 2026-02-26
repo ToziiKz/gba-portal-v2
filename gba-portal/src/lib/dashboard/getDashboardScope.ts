@@ -69,11 +69,34 @@ export async function getDashboardScope(): Promise<DashboardScope> {
     };
   }
 
-  const { data: profile } = await supabase
+  let profile: {
+    role: string | null;
+    is_active: boolean | null;
+    pole_scope?: string | null;
+  } | null = null;
+
+  const { data: profileWithPole, error: profileErr } = await supabase
     .from("profiles")
     .select("role, is_active, pole_scope")
     .eq("id", user.id)
     .single();
+
+  if (
+    profileErr &&
+    (profileErr.code === "PGRST204" ||
+      profileErr.message?.toLowerCase().includes("pole_scope") ||
+      profileErr.message?.toLowerCase().includes("column"))
+  ) {
+    const { data: profileLegacy } = await supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", user.id)
+      .single();
+
+    profile = profileLegacy as any;
+  } else {
+    profile = profileWithPole as any;
+  }
 
   if (!profile || profile.is_active === false) {
     return {

@@ -33,22 +33,10 @@ export const navItems: NavItem[] = [
     minRole: "coach",
   },
   {
-    label: "Équipes",
-    href: "/dashboard/equipes",
+    label: "Effectif Club",
+    href: "/dashboard/effectif-club",
     status: "ready",
-    minRole: "coach",
-  },
-  {
-    label: "Effectif",
-    href: "/dashboard/effectif",
-    status: "ready",
-    note: "équipes + joueurs",
-    minRole: "coach",
-  },
-  {
-    label: "Joueurs",
-    href: "/dashboard/joueurs",
-    status: "ready",
+    note: "macro → micro",
     minRole: "coach",
   },
   {

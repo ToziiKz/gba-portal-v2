@@ -9,10 +9,7 @@ import {
   Users,
   Calendar,
   ShieldCheck,
-  Settings,
   ChevronRight,
-  LogOut,
-  HelpCircle,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,11 +22,11 @@ type Props = {
 
 const iconMap: Record<string, LucideIcon> = {
   "/dashboard": LayoutDashboard,
+  "/dashboard/effectif-club": Users,
   "/dashboard/effectif": Users,
   "/dashboard/planning": Calendar,
   "/dashboard/acces": ShieldCheck,
   "/dashboard/joueurs": Users,
-  "/dashboard/equipes": Users,
 };
 
 export function DashboardSidebar({ role }: Props) {
@@ -97,26 +94,7 @@ export function DashboardSidebar({ role }: Props) {
         </ul>
       </nav>
 
-      <div className="p-4 space-y-4">
-        <div className="rounded-3xl bg-slate-50 p-6 border border-slate-100 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 -mr-4 -mt-4 h-16 w-16 bg-blue-100 rounded-full opacity-20 group-hover:scale-150 transition-transform duration-500" />
-          <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-2 flex items-center gap-2">
-            <HelpCircle className="h-3 w-3" /> Support
-          </p>
-          <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-            Besoin d&apos;aide sur le terrain ? Contacte l&apos;admin.
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between px-2 pt-2">
-          <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-red-500 transition-colors">
-            <LogOut className="h-4 w-4" /> Déconnexion
-          </button>
-          <Link href="/dashboard/settings">
-            <Settings className="h-4 w-4 text-slate-400 hover:text-blue-600 transition-colors" />
-          </Link>
-        </div>
-      </div>
+      <div className="h-4" />
     </aside>
   );
 }

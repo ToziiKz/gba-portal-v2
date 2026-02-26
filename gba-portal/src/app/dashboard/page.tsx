@@ -172,7 +172,7 @@ export default async function DashboardPage() {
                 {healthPlayers.slice(0, 5).map((p) => (
                   <Link
                     key={p.id}
-                    href={`/dashboard/effectif?search=${p.last_name}`}
+                    href={`/dashboard/effectif-club`}
                     className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200"
                   >
                     <span className="text-xs font-black text-slate-800 uppercase truncate">

@@ -111,10 +111,12 @@
 - Dashboard principal
 - Modules conservés et opérationnels:
   - **Accès & rôles** (`/dashboard/acces`)
-  - **Équipes** (`/dashboard/equipes`)
-  - **Effectif** (`/dashboard/effectif`)
-  - **Joueurs** (`/dashboard/joueurs`)
+  - **Effectif Club** (`/dashboard/effectif-club`) — fusion macro/micro équipes + joueurs
   - **Planning** (`/dashboard/planning`)
+- Routes historiques redirigées vers le module unifié:
+  - `/dashboard/effectif` → `/dashboard/effectif-club`
+  - `/dashboard/joueurs` → `/dashboard/effectif-club`
+  - `/dashboard/equipes` → `/dashboard/effectif-club`
 - Gestion staff↔équipes en **many-to-many** via `team_staff` (coach/assistant/staff + principal)
 
 ### Nettoyage déjà effectué (historique récent)
@@ -325,3 +327,4 @@ Pour chaque nouvelle fonctionnalité:
 - **2026-02-24** : Création initiale complète (cartographie + standards + état réel).
 - **2026-02-24** : Ajout des matrices opérationnelles (route→DB, rôles→permissions) + checklist QA pré-livraison.
 - **2026-02-24** : Mise à jour modèle staff M2M (`team_staff`) + clarification rôles actifs (`admin`, `coach`) et sous-rôles équipe (`coach`, `assistant`, `staff`).
+- **2026-02-26** : Refonte module unifié `Effectif Club` (fusion effectif/joueurs/équipes), drawer joueur + fiche équipe, filtres visuels, badges mutation, redirections historiques, suppression module Équipes dédié de la navigation.

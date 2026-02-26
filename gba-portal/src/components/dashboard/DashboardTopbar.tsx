@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Search, Menu, User, LogOut, Globe, Bell, Command } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Search, Bell, ChevronDown, LogOut, Home } from "lucide-react";
 
-import { getNavLabelForPath } from "@/lib/dashboard/nav";
-import { useDashboardScope } from "@/components/dashboard/DashboardScopeProvider";
 import type { DashboardRole } from "@/lib/dashboardRole";
+import { signOutDashboard } from "@/app/dashboard/actions";
 
 type Props = {
   role: DashboardRole;
@@ -24,137 +23,170 @@ const roleLabelMap: Record<DashboardRole, string> = {
   resp_equipements: "Resp. Équipements",
 };
 
-export function DashboardTopbar({ role, userName, onOpenSpotlight }: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const title = React.useMemo(() => getNavLabelForPath(pathname), [pathname]);
-  const scope = useDashboardScope();
+type TopbarTitle = {
+  title: string;
+  subtitle: string;
+};
 
-  const assignedTeamsLabel = React.useMemo(() => {
-    if (role !== "coach") return null;
-    if (!scope.assignedTeams || scope.assignedTeams.length === 0) return null;
-    const primary = scope.assignedTeams[0];
-    const extra = scope.assignedTeams.length - 1;
-    return extra > 0 ? `${primary.name} +${extra}` : primary.name;
-  }, [role, scope.assignedTeams]);
+function getTopbarTitle(pathname: string): TopbarTitle {
+  if (pathname.startsWith("/dashboard/effectif-club")) {
+    return {
+      title: "Effectif Club",
+      subtitle: "Pilotage des effectifs",
+    };
+  }
+  if (pathname.startsWith("/dashboard/acces")) {
+    return {
+      title: "Accès & Permissions",
+      subtitle: "Gouvernance des rôles",
+    };
+  }
+  if (pathname.startsWith("/dashboard/planning")) {
+    return {
+      title: "Planning",
+      subtitle: "Coordination hebdomadaire",
+    };
+  }
 
-  const handleLogout = async () => {
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
+  return {
+    title: "Dashboard",
+    subtitle: "Pilotage au terrain",
   };
+}
+
+export function DashboardTopbar({
+  role,
+  userName,
+  userEmail,
+  onOpenSpotlight,
+}: Props) {
+  const pathname = usePathname() ?? "/dashboard";
+  const { title, subtitle } = getTopbarTitle(pathname);
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, []);
 
   return (
-    <div className="mb-8 flex items-center justify-between">
-      {/* Mobile Title Area */}
-      <div className="lg:hidden flex items-center gap-3">
-        <button className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm active:scale-95 transition-transform">
-          <Menu className="h-5 w-5" />
-        </button>
-        <div>
-          <p className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-600 leading-none mb-1">
-            Plan de match du jour
-          </p>
-          <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none">
-            {title}
-          </h1>
-        </div>
-      </div>
-
-      {/* Desktop Title Area */}
-      <div className="hidden lg:block">
-        <div className="flex items-center gap-3 text-slate-400 mb-1">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-            Espace GBA
-          </span>
-          <span className="text-[10px]">/</span>
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-600">
-            {title}
-          </span>
-        </div>
-        <h1 className="text-4xl font-black text-slate-900 uppercase tracking-tighter leading-none font-[var(--font-teko)]">
-          Priorité{" "}
-          <span className="text-blue-600">
-            {title === "Dashboard" ? "au terrain" : title.toLowerCase()}
-          </span>
-        </h1>
-      </div>
-
-      {/* Global Actions Area */}
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* Search Bar - Visual only for Desktop */}
-        <button
-          onClick={onOpenSpotlight}
-          className="hidden md:flex items-center gap-10 pl-4 pr-2 py-1.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-blue-200 transition-all group"
-        >
-          <div className="flex items-center gap-3 text-slate-400">
-            <Search className="h-4 w-4 group-hover:text-blue-600 transition-colors" />
-            <span className="text-xs font-bold uppercase tracking-widest opacity-60">
-              Recherche...
-            </span>
+    <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/90 backdrop-blur-xl">
+      <div className="mx-auto max-w-[1600px] px-4 py-2.5 sm:px-6 lg:px-8">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-slate-400">
+              <span className="text-[10px] font-black uppercase tracking-[0.28em]">
+                Espace GBA
+              </span>
+              <span className="text-[10px]">/</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-600 truncate">
+                {title}
+              </span>
+            </div>
+            <h1 className="mt-1 font-[var(--font-teko)] text-2xl font-black uppercase leading-none tracking-tight text-slate-900 sm:text-3xl">
+              {subtitle.split(" ")[0]}{" "}
+              <span className="text-blue-600">
+                {subtitle.replace(`${subtitle.split(" ")[0]} `, "")}
+              </span>
+            </h1>
           </div>
-          <div className="px-2 py-1 rounded-lg bg-slate-50 border border-slate-100 text-[10px] font-black text-slate-400 flex items-center gap-1">
-            <Command className="h-2.5 w-2.5" /> K
-          </div>
-        </button>
 
-        {/* Notifications (Placeholder) */}
-        <button className="h-10 w-10 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-blue-600 shadow-sm transition-all">
-          <Bell className="h-5 w-5" />
-        </button>
+          <div className="hidden items-center gap-2 sm:flex">
+            <button
+              type="button"
+              onClick={onOpenSpotlight}
+              className="group flex h-9 min-w-[250px] items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-left shadow-sm transition hover:border-blue-200"
+            >
+              <span className="flex items-center gap-2 text-slate-400 group-hover:text-slate-600">
+                <Search className="h-4 w-4" />
+                <span className="text-xs font-semibold">
+                  Rechercher joueur, équipe, coach...
+                </span>
+              </span>
+              <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                ⌘K
+              </span>
+            </button>
 
-        {/* User Card */}
-        <div className="flex items-center gap-3 pl-2 md:pl-4 border-l border-slate-100">
-          <div className="hidden md:flex flex-col items-end">
-            <p className="text-xs font-black text-slate-900 leading-none uppercase tracking-wide">
-              {userName?.split(" ")[0]}
-            </p>
-            <div className="flex items-center gap-2 mt-1">
-              <span
-                className={`text-[8px] font-black uppercase tracking-tighter px-1.5 py-0.5 rounded ${role === "admin" ? "bg-purple-100 text-purple-600" : "bg-blue-100 text-blue-600"}`}
+            <div
+              ref={menuRef}
+              className="relative flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 shadow-sm"
+            >
+              <button
+                type="button"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-50 hover:text-blue-700"
               >
+                <Bell className="h-4 w-4" />
+              </button>
+              <div className="min-w-0 pr-1">
+                <p className="max-w-[140px] truncate text-[10px] font-black uppercase tracking-widest text-slate-800">
+                  {userName || "Utilisateur"}
+                </p>
+                {userEmail ? (
+                  <p className="max-w-[140px] truncate text-[9px] text-slate-500">
+                    {userEmail}
+                  </p>
+                ) : null}
+              </div>
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-blue-700">
                 {roleLabelMap[role] ?? role}
               </span>
-              {assignedTeamsLabel && (
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                  {assignedTeamsLabel}
-                </span>
+              <button
+                type="button"
+                aria-label="Ouvrir menu utilisateur"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 top-11 z-50 w-52 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl">
+                  <Link
+                    href="/"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    <Home className="h-4 w-4 text-slate-500" />
+                    Retour au site public
+                  </Link>
+                  <form action={signOutDashboard}>
+                    <button
+                      type="submit"
+                      className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Se déconnecter
+                    </button>
+                  </form>
+                </div>
               )}
             </div>
           </div>
+        </div>
 
-          <div className="relative group">
-            <button className="h-10 w-10 md:h-12 md:w-12 rounded-2xl bg-slate-900 border-2 border-white shadow-xl flex items-center justify-center text-white transition-transform group-hover:scale-105 active:scale-95">
-              <User className="h-5 w-5 md:h-6 md:w-6" />
-            </button>
-
-            {/* Context Dropdown (Simple Simulation) */}
-            <div className="absolute right-0 top-full pt-2 w-48 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all z-50">
-              <div className="rounded-2xl bg-white border border-slate-100 shadow-2xl p-2">
-                <Link
-                  href="/"
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-600"
-                >
-                  <Globe className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-widest">
-                    Site Public
-                  </span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-widest">
-                    Déconnexion
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+        <div className="mt-2 flex items-center justify-between gap-3 sm:hidden">
+          <button
+            type="button"
+            onClick={onOpenSpotlight}
+            className="flex h-9 flex-1 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-slate-500"
+          >
+            <Search className="h-4 w-4" />
+            <span className="text-xs font-semibold">Recherche</span>
+          </button>
+          <span className="rounded-full bg-blue-100 px-2 py-1 text-[9px] font-black uppercase tracking-widest text-blue-700">
+            {roleLabelMap[role] ?? role}
+          </span>
         </div>
       </div>
-    </div>
+    </header>
   );
 }
