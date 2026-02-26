@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/server";
 import {
   regenerateCoachInvitation,
@@ -44,6 +46,28 @@ export default async function DashboardCoachAccessPage({
 }) {
   const supabase = await createClient();
   const params = (await searchParams) ?? {};
+
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) {
+    redirect("/login");
+  }
+
+  const { data: authProfile } = await supabase
+    .from("profiles")
+    .select("role, is_active")
+    .eq("id", authUser.id)
+    .single();
+
+  if (authProfile?.is_active === false) {
+    redirect("/login?disabled=1");
+  }
+
+  if (String(authProfile?.role ?? "") !== "admin") {
+    redirect("/dashboard");
+  }
 
   const statusFilter = params.status ?? "pending";
 

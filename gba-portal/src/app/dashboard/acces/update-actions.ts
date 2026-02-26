@@ -41,7 +41,9 @@ export async function updateUserProfile(formData: FormData) {
   if (!updatedRows || updatedRows.length === 0) {
     redirect(
       "/dashboard/acces?err=" +
-        encodeURIComponent("Aucun profil mis à jour (RLS ou user introuvable)."),
+        encodeURIComponent(
+          "Aucun profil mis à jour (RLS ou user introuvable).",
+        ),
     );
   }
 
@@ -93,46 +95,22 @@ export async function deleteUserProfile(formData: FormData) {
   const { supabase } = await requireRole("admin");
   const userId = String(formData.get("userId") ?? "");
 
-  if (!userId) throw new Error("userId manquant");
-
-  try {
-    await supabase.from("team_staff").delete().eq("profile_id", userId);
-
-    await supabase
-      .from("teams")
-      .update({ coach_id: null })
-      .eq("coach_id", userId);
-
-    await supabase.from("coach_invitations").delete().eq("used_by", userId);
-
-    await supabase
-      .from("planning_sessions")
-      .update({ created_by: null })
-      .eq("created_by", userId);
-
-    await supabase.from("staff_profiles").delete().eq("user_id", userId);
-
-    const { error } = await supabase.from("profiles").delete().eq("id", userId);
-
-    if (error) throw error;
-
-    revalidatePath("/dashboard/acces");
-    return;
-  } catch (err: unknown) {
-    log.error("Delete error:", err);
-
-    const { error: archiveErr } = await supabase
-      .from("profiles")
-      .update({
-        is_active: false,
-        email: `deleted_${Date.now()}_${userId.slice(0, 4)}@gba.internal`,
-        full_name: "Compte Supprimé",
-      })
-      .eq("id", userId);
-
-    if (archiveErr) throw new Error("Erreur archivage: " + archiveErr.message);
-
-    revalidatePath("/dashboard/acces");
-    return;
+  if (!userId) {
+    redirect("/dashboard/acces?err=" + encodeURIComponent("userId manquant"));
   }
+
+  const { error } = await supabase.rpc("admin_hard_delete_user", {
+    p_target_user_id: userId,
+  });
+
+  if (error) {
+    log.error("Hard delete error:", error);
+    redirect(
+      "/dashboard/acces?err=" +
+        encodeURIComponent(error.message || "Suppression impossible"),
+    );
+  }
+
+  revalidatePath("/dashboard/acces");
+  redirect("/dashboard/acces?ok=1");
 }
