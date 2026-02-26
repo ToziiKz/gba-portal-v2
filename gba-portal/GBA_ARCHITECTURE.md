@@ -212,7 +212,8 @@ Pour chaque nouvelle fonctionnalité:
   - Tables lues/écrites: `coach_invitations`, `profiles`, `teams`
   - Auth: création/activation compte lié
 - `/coach-access`
-  - Tables écrites: `coach_access_requests`
+  - Page informative uniquement (invitation obligatoire)
+  - Aucune écriture DB
 
 ### Dashboard Core
 - `/dashboard`

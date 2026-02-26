@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { regenerateCoachInvitation, createDirectInvitation } from "./actions";
+import {
+  regenerateCoachInvitation,
+  createDirectInvitation,
+  deleteCoachInvitation,
+} from "./actions";
 import { updateUserProfile, deleteUserProfile } from "./update-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -25,6 +29,7 @@ type Params = {
   q?: string;
   ok?: string;
   err?: string;
+  user?: string;
 };
 
 function toDateLabel(value: string | null) {
@@ -65,6 +70,13 @@ export default async function DashboardCoachAccessPage({
   const latestInvitations = (rawInvitations ?? []).filter(
     (inv) => !existingEmails.has(inv.email.toLowerCase()),
   );
+
+  const { data: usedInvitations } = await supabase
+    .from("coach_invitations")
+    .select("id, email, full_name, role, created_at, expires_at, used_at")
+    .not("used_at", "is", null)
+    .order("used_at", { ascending: false })
+    .limit(10);
 
   // 4. Équipes
   const { data: teams } = await supabase
@@ -255,18 +267,80 @@ export default async function DashboardCoachAccessPage({
                           Expire le {toDateLabel(inv.expires_at)}
                         </p>
                       </div>
-                      <form action={regenerateCoachInvitation}>
+                      <div className="flex items-center gap-1">
+                        <form action={regenerateCoachInvitation}>
+                          <input
+                            type="hidden"
+                            name="invitationId"
+                            value={inv.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                          >
+                            Relancer
+                          </Button>
+                        </form>
+                        <form action={deleteCoachInvitation}>
+                          <input
+                            type="hidden"
+                            name="invitationId"
+                            value={inv.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50"
+                          >
+                            Supprimer
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {usedInvitations && usedInvitations.length > 0 && (
+            <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                  Invitations utilisées ({usedInvitations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-50">
+                  {usedInvitations.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="p-4 flex items-center justify-between group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-slate-800 uppercase truncate leading-none mb-1">
+                          {inv.full_name || inv.email}
+                        </p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                          Utilisée le {toDateLabel(inv.used_at)}
+                        </p>
+                      </div>
+                      <form action={deleteCoachInvitation}>
                         <input
                           type="hidden"
                           name="invitationId"
                           value={inv.id}
                         />
                         <Button
+                          type="submit"
                           variant="ghost"
                           size="sm"
-                          className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                          className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50"
                         >
-                          Relancer
+                          Supprimer
                         </Button>
                       </form>
                     </div>
@@ -340,7 +414,21 @@ export default async function DashboardCoachAccessPage({
                 const assignedTeams = (teams ?? []).filter((t) =>
                   assignmentByTeamId.has(t.id),
                 );
+                const assignedPrimaryCount = userAssignments.filter((a) =>
+                  Boolean(a.is_primary),
+                ).length;
+                const assignedCoachCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "coach",
+                ).length;
+                const assignedAssistantCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "assistant",
+                ).length;
+                const assignedStaffCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "staff",
+                ).length;
                 const isActive = user.is_active !== false;
+                const wasJustUpdated =
+                  params.ok === "1" && params.user === user.id;
 
                 return (
                   <Card
@@ -371,6 +459,11 @@ export default async function DashboardCoachAccessPage({
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 truncate">
                                   {user.email}
                                 </p>
+                                {wasJustUpdated && (
+                                  <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-emerald-600">
+                                    Dernière sauvegarde réussie
+                                  </p>
+                                )}
                               </div>
                             </div>
 
@@ -414,10 +507,24 @@ export default async function DashboardCoachAccessPage({
 
                           {user.role === "coach" && (
                             <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
-                              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white/50">
+                              <div className="p-4 border-b border-slate-100 bg-white/50 space-y-2">
                                 <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
                                   Équipes assignées ({assignedTeams.length})
                                 </p>
+                                <div className="flex flex-wrap gap-2">
+                                  <span className="rounded-lg bg-slate-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-600">
+                                    Principal: {assignedPrimaryCount}
+                                  </span>
+                                  <span className="rounded-lg bg-blue-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-blue-700">
+                                    Coach: {assignedCoachCount}
+                                  </span>
+                                  <span className="rounded-lg bg-indigo-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-indigo-700">
+                                    Assistant: {assignedAssistantCount}
+                                  </span>
+                                  <span className="rounded-lg bg-amber-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-700">
+                                    Staff: {assignedStaffCount}
+                                  </span>
+                                </div>
                               </div>
                               <div className="p-2 max-h-72 overflow-y-auto space-y-2">
                                 {(teams ?? []).map((team) => {

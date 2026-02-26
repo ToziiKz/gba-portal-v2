@@ -10,7 +10,9 @@ export async function updateUserProfile(formData: FormData) {
 
   const userId = String(formData.get("userId") ?? "");
   const role = String(formData.get("role") ?? "coach");
-  const isActive = formData.get("isActive") === "on";
+  const hasIsActiveField = formData.has("isActive");
+  const isActiveRaw = formData.get("isActive");
+  const isActive = hasIsActiveField && String(isActiveRaw) === "on";
   const assignTeamIds = Array.from(formData.keys())
     .filter((k) => k.startsWith("assign_"))
     .map((k) => k.replace("assign_", ""))
@@ -20,18 +22,27 @@ export async function updateUserProfile(formData: FormData) {
     redirect("/dashboard/acces?err=" + encodeURIComponent("userId manquant"));
   }
 
-  const { error: profErr } = await supabase
+  const { data: updatedRows, error: profErr } = await supabase
     .from("profiles")
     .update({
       role,
       is_active: isActive,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", userId);
+    .eq("id", userId)
+    .select("id, is_active")
+    .limit(1);
 
   if (profErr) {
     log.error("Profile update failed:", profErr);
     redirect("/dashboard/acces?err=" + encodeURIComponent(profErr.message));
+  }
+
+  if (!updatedRows || updatedRows.length === 0) {
+    redirect(
+      "/dashboard/acces?err=" +
+        encodeURIComponent("Aucun profil mis à jour (RLS ou user introuvable)."),
+    );
   }
 
   // M2M assignment source of truth
@@ -75,7 +86,7 @@ export async function updateUserProfile(formData: FormData) {
   }
 
   revalidatePath("/dashboard/acces");
-  redirect("/dashboard/acces?ok=1");
+  redirect(`/dashboard/acces?ok=1&user=${encodeURIComponent(userId)}`);
 }
 
 export async function deleteUserProfile(formData: FormData) {

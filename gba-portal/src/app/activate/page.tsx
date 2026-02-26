@@ -1,3 +1,5 @@
+import { createHash } from "crypto";
+
 import { createClient } from "@/lib/supabase/server";
 import { ActivateForm } from "./activate-form";
 
@@ -14,15 +16,33 @@ export default async function ActivatePage({
   const supabase = await createClient();
 
   let initialFullName = "";
-  if (params.inv) {
+  let email = "";
+  let assignedTeamNames: string[] = [];
+
+  if (params.inv && params.token) {
+    const tokenHash = createHash("sha256")
+      .update(String(params.token))
+      .digest("hex");
+
     const { data: inv } = await supabase
       .from("coach_invitations")
-      .select("full_name")
+      .select("full_name, email, target_team_ids, used_at, expires_at")
       .eq("id", params.inv)
+      .eq("token_hash", tokenHash)
       .single();
 
     if (inv?.full_name) {
       initialFullName = inv.full_name;
+      email = inv.email ?? "";
+
+      const teamIds = (inv.target_team_ids ?? []) as string[];
+      if (teamIds.length > 0) {
+        const { data: teams } = await supabase
+          .from("teams")
+          .select("name")
+          .in("id", teamIds);
+        assignedTeamNames = (teams ?? []).map((t) => t.name);
+      }
     }
   }
 
@@ -45,6 +65,8 @@ export default async function ActivatePage({
             invitationId={params.inv}
             token={params.token}
             initialFullName={initialFullName}
+            email={email}
+            assignedTeamNames={assignedTeamNames}
           />
         </div>
       </div>

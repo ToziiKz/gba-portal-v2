@@ -14,13 +14,9 @@ async function requireAdmin() {
 }
 
 function buildInviteUrl(invitationId: string, token: string) {
-  const configuredBase = process.env.NEXT_PUBLIC_APP_URL?.trim();
-
-  if (process.env.NODE_ENV === "production" && !configuredBase) {
-    throw new Error(
-      "NEXT_PUBLIC_APP_URL est requis en production pour générer les liens d’invitation.",
-    );
-  }
+  const configuredBase =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.NEXT_PUBLIC_SITE_URL?.trim();
 
   const base = configuredBase || "http://localhost:3000";
   return `${base}/activate?inv=${invitationId}&token=${token}`;
@@ -34,7 +30,8 @@ async function logAccessEvent(
   targetId: string,
   meta?: Record<string, unknown>,
 ) {
-  await supabase.from("access_admin_events").insert([
+  // Optional audit trail: invitation flow must not fail if audit table is absent.
+  const { error } = await supabase.from("access_admin_events").insert([
     {
       actor_id: actorId,
       action,
@@ -43,6 +40,10 @@ async function logAccessEvent(
       meta: meta ?? {},
     },
   ]);
+
+  if (error) {
+    log.warn("Audit event skipped (access_admin_events unavailable):", error);
+  }
 }
 
 // Invitation-only workflow (coach_access_requests disabled)
@@ -53,7 +54,8 @@ export async function createDirectInvitation(formData: FormData) {
     .trim()
     .toLowerCase();
   const fullName = String(formData.get("fullName") ?? "").trim();
-  const role = String(formData.get("role") ?? "coach");
+  const roleRaw = String(formData.get("role") ?? "coach");
+  const role = roleRaw === "admin" ? "admin" : "coach";
   const targetTeamIds = formData
     .getAll("targetTeamIds")
     .map((id) => String(id))
@@ -66,6 +68,13 @@ export async function createDirectInvitation(formData: FormData) {
   const token = randomBytes(24).toString("hex");
   const tokenHash = createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+
+  // Expire previous pending invites for same email to avoid duplicate conflicts
+  await supabase
+    .from("coach_invitations")
+    .update({ expires_at: new Date().toISOString() })
+    .eq("email", email)
+    .is("used_at", null);
 
   const { data: inv, error: invErr } = await supabase
     .from("coach_invitations")
@@ -85,7 +94,12 @@ export async function createDirectInvitation(formData: FormData) {
 
   if (invErr || !inv) {
     log.error("Insert error:", invErr);
-    throw new Error("Impossible de créer l’invitation.");
+    redirect(
+      "/dashboard/acces?err=" +
+        encodeURIComponent(
+          invErr?.message || "Impossible de créer l’invitation.",
+        ),
+    );
   }
 
   await logAccessEvent(
@@ -228,4 +242,38 @@ export async function setCoachTeams(formData: FormData) {
   );
 
   revalidatePath("/dashboard/acces");
+}
+
+export async function deleteCoachInvitation(formData: FormData) {
+  const { supabase, user } = await requireAdmin();
+
+  const invitationId = String(formData.get("invitationId") ?? "");
+  if (!invitationId) {
+    redirect(
+      "/dashboard/acces?err=" + encodeURIComponent("invitationId manquant"),
+    );
+  }
+
+  const { error } = await supabase
+    .from("coach_invitations")
+    .delete()
+    .eq("id", invitationId);
+
+  if (error) {
+    redirect(
+      "/dashboard/acces?err=" +
+        encodeURIComponent(error.message || "Suppression impossible"),
+    );
+  }
+
+  await logAccessEvent(
+    supabase,
+    user.id,
+    "invitation.delete",
+    "coach_invitation",
+    invitationId,
+  );
+
+  revalidatePath("/dashboard/acces");
+  redirect("/dashboard/acces?ok=1");
 }
