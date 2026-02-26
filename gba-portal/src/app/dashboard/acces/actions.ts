@@ -9,8 +9,14 @@ import { requireRole } from "@/lib/dashboard/authz";
 import { log } from "@/lib/logger";
 
 async function requireAdmin() {
-  const { supabase, user } = await requireRole("admin");
-  return { supabase, user };
+  try {
+    const { supabase, user } = await requireRole("admin");
+    return { supabase, user };
+  } catch {
+    redirect(
+      "/dashboard/acces?err=" + encodeURIComponent("Accès admin requis"),
+    );
+  }
 }
 
 function buildInviteUrl(invitationId: string, token: string) {

@@ -5,8 +5,19 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/dashboard/authz";
 import { log } from "@/lib/logger";
 
+async function requireAdminSupabase() {
+  try {
+    const { supabase } = await requireRole("admin");
+    return supabase;
+  } catch {
+    redirect(
+      "/dashboard/acces?err=" + encodeURIComponent("Accès admin requis"),
+    );
+  }
+}
+
 export async function updateUserProfile(formData: FormData) {
-  const { supabase } = await requireRole("admin");
+  const supabase = await requireAdminSupabase();
 
   const userId = String(formData.get("userId") ?? "");
   const role = String(formData.get("role") ?? "coach");
@@ -92,7 +103,7 @@ export async function updateUserProfile(formData: FormData) {
 }
 
 export async function deleteUserProfile(formData: FormData) {
-  const { supabase } = await requireRole("admin");
+  const supabase = await requireAdminSupabase();
   const userId = String(formData.get("userId") ?? "");
 
   if (!userId) {
