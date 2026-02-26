@@ -15,7 +15,9 @@ function fullName(firstname: string | null, lastname: string | null) {
 }
 
 function normalizeMutation(value: string | null) {
-  const v = String(value ?? "").trim().toLowerCase();
+  const v = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!v) return null;
   if (v.includes("hp") || v.includes("hors")) return "Mutation HP";
   if (v.includes("surclass")) return "Surclassé";
@@ -50,11 +52,16 @@ export default async function EffectifClubPage({
   }>;
 }) {
   const params = (await searchParams) ?? {};
-  const { teams, players, staff, scope, diagnostics } = await getEffectifClubData();
+  const { teams, players, staff, scope, diagnostics } =
+    await getEffectifClubData();
 
   const activePole = params.pole ? decodeURIComponent(params.pole) : "";
-  const activeCategory = params.category ? decodeURIComponent(params.category) : "";
-  const activeMutation = params.mutation ? decodeURIComponent(params.mutation) : "";
+  const activeCategory = params.category
+    ? decodeURIComponent(params.category)
+    : "";
+  const activeMutation = params.mutation
+    ? decodeURIComponent(params.mutation)
+    : "";
 
   const poles = [...new Set(teams.map((t) => t.pole ?? "NON_DEFINI"))];
   const categories = [...new Set(teams.map((t) => t.category ?? "NON_DEFINI"))];
@@ -178,7 +185,11 @@ export default async function EffectifClubPage({
               Filtre pôle
             </span>
             <Link
-              href={buildFilterHref({ pole: "", category: activeCategory, mutation: activeMutation })}
+              href={buildFilterHref({
+                pole: "",
+                category: activeCategory,
+                mutation: activeMutation,
+              })}
               className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${activePole ? "bg-slate-100 text-slate-600" : "bg-blue-100 text-blue-700"}`}
             >
               Tous
@@ -186,7 +197,11 @@ export default async function EffectifClubPage({
             {poles.map((pole) => (
               <Link
                 key={pole}
-                href={buildFilterHref({ pole, category: activeCategory, mutation: activeMutation })}
+                href={buildFilterHref({
+                  pole,
+                  category: activeCategory,
+                  mutation: activeMutation,
+                })}
                 className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest ${(activePole || "") === pole ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}
               >
                 {pole === "NON_DEFINI" ? "Sans pôle" : pole}
@@ -256,11 +271,13 @@ export default async function EffectifClubPage({
               </strong>
             </p>
             <p>
-              teams={teams.length}, players={players.length}, staff={staff.length}
+              teams={teams.length}, players={players.length}, staff=
+              {staff.length}
             </p>
             {diagnostics.teamsError ? (
               <p>
-                teams_error: {diagnostics.teamsErrorCode} — {diagnostics.teamsError}
+                teams_error: {diagnostics.teamsErrorCode} —{" "}
+                {diagnostics.teamsError}
               </p>
             ) : null}
             {diagnostics.playersError ? (
@@ -271,7 +288,8 @@ export default async function EffectifClubPage({
             ) : null}
             {diagnostics.staffError ? (
               <p>
-                staff_error: {diagnostics.staffErrorCode} — {diagnostics.staffError}
+                staff_error: {diagnostics.staffErrorCode} —{" "}
+                {diagnostics.staffError}
               </p>
             ) : null}
           </CardContent>
@@ -390,7 +408,8 @@ export default async function EffectifClubPage({
                           {team.name}
                         </p>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                          {team.category ?? "—"} • {team.players.length} joueur(s)
+                          {team.category ?? "—"} • {team.players.length}{" "}
+                          joueur(s)
                         </p>
                       </div>
                       <div className="text-right space-y-1">
@@ -398,7 +417,8 @@ export default async function EffectifClubPage({
                           Coach principal
                         </p>
                         <p className="text-xs font-bold text-slate-700">
-                          {team.primaryCoach?.profile?.full_name ?? "Non défini"}
+                          {team.primaryCoach?.profile?.full_name ??
+                            "Non défini"}
                         </p>
                         <Link
                           href={`/dashboard/effectif-club?team=${encodeURIComponent(team.id)}`}
@@ -416,7 +436,9 @@ export default async function EffectifClubPage({
                         Staff équipe
                       </p>
                       {team.staff.length === 0 ? (
-                        <p className="text-xs text-slate-500">Aucun staff assigné.</p>
+                        <p className="text-xs text-slate-500">
+                          Aucun staff assigné.
+                        </p>
                       ) : (
                         <ul className="space-y-2">
                           {team.staff.map((s) => (
@@ -425,7 +447,9 @@ export default async function EffectifClubPage({
                               className="text-xs"
                             >
                               <p className="font-bold text-slate-800">
-                                {s.profile?.full_name ?? s.profile?.email ?? "Profil"}
+                                {s.profile?.full_name ??
+                                  s.profile?.email ??
+                                  "Profil"}
                               </p>
                               <p className="text-[10px] uppercase tracking-widest text-slate-500">
                                 {s.role_in_team}
@@ -448,7 +472,9 @@ export default async function EffectifClubPage({
                       </div>
 
                       {team.players.length === 0 ? (
-                        <p className="text-xs text-slate-500">Aucun joueur dans cette équipe.</p>
+                        <p className="text-xs text-slate-500">
+                          Aucun joueur dans cette équipe.
+                        </p>
                       ) : (
                         <div className="grid gap-2 sm:grid-cols-2">
                           {team.players.map((p) => (
@@ -461,13 +487,18 @@ export default async function EffectifClubPage({
                                 {fullName(p.firstname, p.lastname)}
                               </p>
                               <p className="text-[10px] uppercase tracking-widest text-slate-500">
-                                {p.category ?? team.category ?? "—"} • {p.gender ?? "—"}
+                                {p.category ?? team.category ?? "—"} •{" "}
+                                {p.gender ?? "—"}
                               </p>
                               <div className="mt-1 flex items-center gap-2 flex-wrap">
                                 {p.license ? (
-                                  <p className="text-[10px] text-slate-400">Licence: {p.license}</p>
+                                  <p className="text-[10px] text-slate-400">
+                                    Licence: {p.license}
+                                  </p>
                                 ) : (
-                                  <p className="text-[10px] text-amber-600 font-bold">Licence manquante</p>
+                                  <p className="text-[10px] text-amber-600 font-bold">
+                                    Licence manquante
+                                  </p>
                                 )}
                                 {normalizeMutation(p.mutation) ? (
                                   <span
@@ -495,7 +526,6 @@ export default async function EffectifClubPage({
           </Card>
         ))}
       </div>
-
     </div>
   );
 }

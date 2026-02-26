@@ -7,7 +7,9 @@ import { X, PencilLine, Shield, Phone, MapPin } from "lucide-react";
 import { updateEffectifClubPlayer } from "./actions";
 
 function normalizeMutation(value: string | null) {
-  const v = String(value ?? "").trim().toLowerCase();
+  const v = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!v) return null;
   if (v.includes("hp") || v.includes("hors")) return "Mutation HP";
   if (v.includes("surclass")) return "Surclassé";
@@ -83,7 +85,8 @@ export function PlayerDrawer({
   if (!open || !selectedPlayer) return null;
 
   const mutationLabel = normalizeMutation(selectedPlayer.mutation);
-  const fullName = `${selectedPlayer.firstname ?? ""} ${selectedPlayer.lastname ?? ""}`.trim() ||
+  const fullName =
+    `${selectedPlayer.firstname ?? ""} ${selectedPlayer.lastname ?? ""}`.trim() ||
     "Sans nom";
 
   return (
@@ -136,8 +139,16 @@ export function PlayerDrawer({
           </div>
         </div>
 
-        <form id="player-drawer-form" action={updateEffectifClubPlayer} className="space-y-4 px-5 py-4 pb-24">
-          <input type="hidden" name="player_uid" value={selectedPlayer.player_uid ?? ""} />
+        <form
+          id="player-drawer-form"
+          action={updateEffectifClubPlayer}
+          className="space-y-4 px-5 py-4 pb-24"
+        >
+          <input
+            type="hidden"
+            name="player_uid"
+            value={selectedPlayer.player_uid ?? ""}
+          />
           <input
             type="hidden"
             name="original_license"
@@ -151,32 +162,58 @@ export function PlayerDrawer({
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Licence
-                <input name="license" defaultValue={selectedPlayer.license ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="license"
+                  defaultValue={selectedPlayer.license ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Équipe
-                <select name="team_id" defaultValue={selectedPlayer.team_id ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm">
+                <select
+                  name="team_id"
+                  defaultValue={selectedPlayer.team_id ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                >
                   <option value="">Non assignée</option>
                   {teams.map((t) => (
-                    <option key={t.id} value={t.id}>{t.name}</option>
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
                   ))}
                 </select>
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Prénom
-                <input name="firstname" defaultValue={selectedPlayer.firstname ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="firstname"
+                  defaultValue={selectedPlayer.firstname ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Nom
-                <input name="lastname" defaultValue={selectedPlayer.lastname ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="lastname"
+                  defaultValue={selectedPlayer.lastname ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Genre
-                <input name="gender" defaultValue={selectedPlayer.gender ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="gender"
+                  defaultValue={selectedPlayer.gender ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Catégorie
-                <input name="category" defaultValue={selectedPlayer.category ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="category"
+                  defaultValue={selectedPlayer.category ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
             </div>
           </section>
@@ -188,11 +225,19 @@ export function PlayerDrawer({
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Mobile
-                <input name="mobile" defaultValue={selectedPlayer.mobile ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="mobile"
+                  defaultValue={selectedPlayer.mobile ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Email
-                <input name="email" defaultValue={selectedPlayer.email ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="email"
+                  defaultValue={selectedPlayer.email ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
             </div>
           </section>
@@ -204,27 +249,51 @@ export function PlayerDrawer({
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Nom
-                <input name="resp_legal_1" defaultValue={selectedPlayer.resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="resp_legal_1"
+                  defaultValue={selectedPlayer.resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Mobile
-                <input name="mobile_resp_legal_1" defaultValue={selectedPlayer.mobile_resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="mobile_resp_legal_1"
+                  defaultValue={selectedPlayer.mobile_resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600 md:col-span-2">
                 Adresse
-                <input name="adress_resp_legal_1" defaultValue={selectedPlayer.adress_resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="adress_resp_legal_1"
+                  defaultValue={selectedPlayer.adress_resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Code postal
-                <input name="zip_resp_legal_1" defaultValue={selectedPlayer.zip_resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="zip_resp_legal_1"
+                  defaultValue={selectedPlayer.zip_resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Ville
-                <input name="city_resp_legal_1" defaultValue={selectedPlayer.city_resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="city_resp_legal_1"
+                  defaultValue={selectedPlayer.city_resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600 md:col-span-2">
                 Email
-                <input name="email_resp_legal_1" defaultValue={selectedPlayer.email_resp_legal_1 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="email_resp_legal_1"
+                  defaultValue={selectedPlayer.email_resp_legal_1 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
             </div>
           </section>
@@ -236,27 +305,51 @@ export function PlayerDrawer({
             <div className="grid gap-3 md:grid-cols-2">
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Nom
-                <input name="resp_legal_2" defaultValue={selectedPlayer.resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="resp_legal_2"
+                  defaultValue={selectedPlayer.resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Mobile
-                <input name="mobile_resp_legal_2" defaultValue={selectedPlayer.mobile_resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="mobile_resp_legal_2"
+                  defaultValue={selectedPlayer.mobile_resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600 md:col-span-2">
                 Adresse
-                <input name="adress_resp_legal_2" defaultValue={selectedPlayer.adress_resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="adress_resp_legal_2"
+                  defaultValue={selectedPlayer.adress_resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Code postal
-                <input name="zip_resp_legal_2" defaultValue={selectedPlayer.zip_resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="zip_resp_legal_2"
+                  defaultValue={selectedPlayer.zip_resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600">
                 Ville
-                <input name="city_resp_legal_2" defaultValue={selectedPlayer.city_resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="city_resp_legal_2"
+                  defaultValue={selectedPlayer.city_resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
               <label className="grid gap-1 text-xs font-bold text-slate-600 md:col-span-2">
                 Email
-                <input name="email_resp_legal_2" defaultValue={selectedPlayer.email_resp_legal_2 ?? ""} className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm" />
+                <input
+                  name="email_resp_legal_2"
+                  defaultValue={selectedPlayer.email_resp_legal_2 ?? ""}
+                  className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-sm"
+                />
               </label>
             </div>
           </section>

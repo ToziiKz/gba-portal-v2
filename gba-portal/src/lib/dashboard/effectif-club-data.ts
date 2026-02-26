@@ -68,9 +68,11 @@ export async function getEffectifClubData() {
     .order("lastname")
     .order("firstname");
 
-  let staffQuery = db.from("team_staff").select(
-    "team_id, profile_id, role_in_team, is_primary, profile:profile_id(id, full_name, email)",
-  );
+  let staffQuery = db
+    .from("team_staff")
+    .select(
+      "team_id, profile_id, role_in_team, is_primary, profile:profile_id(id, full_name, email)",
+    );
 
   if (scope.role === "coach") {
     if (scope.viewableTeamIds && scope.viewableTeamIds.length > 0) {
@@ -85,8 +87,11 @@ export async function getEffectifClubData() {
     }
   }
 
-  const [{ data: teams, error: teamsErr }, { data: players, error: playersErr }, { data: staff, error: staffErr }] =
-    await Promise.all([teamsQuery, playersQuery, staffQuery]);
+  const [
+    { data: teams, error: teamsErr },
+    { data: players, error: playersErr },
+    { data: staff, error: staffErr },
+  ] = await Promise.all([teamsQuery, playersQuery, staffQuery]);
 
   if (teamsErr) log.error("[effectif-club] teams query error:", teamsErr);
   if (playersErr) log.error("[effectif-club] players query error:", playersErr);

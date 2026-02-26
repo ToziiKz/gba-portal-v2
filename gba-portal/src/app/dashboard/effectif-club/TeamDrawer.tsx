@@ -36,7 +36,9 @@ function fullName(firstname: string | null, lastname: string | null) {
 }
 
 function normalizeMutation(value: string | null) {
-  const v = String(value ?? "").trim().toLowerCase();
+  const v = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!v) return null;
   if (v.includes("hp") || v.includes("hors")) return "Mutation HP";
   if (v.includes("surclass")) return "Surclassé";
@@ -132,7 +134,9 @@ export function TeamDrawer({ team }: { team: TeamDetail | null }) {
               <Users className="h-3.5 w-3.5" /> Roster joueurs
             </h3>
             {team.players.length === 0 ? (
-              <p className="text-xs text-slate-500">Aucun joueur dans cette équipe.</p>
+              <p className="text-xs text-slate-500">
+                Aucun joueur dans cette équipe.
+              </p>
             ) : (
               <div className="grid gap-2 sm:grid-cols-2">
                 {team.players.map((p) => {
@@ -151,7 +155,9 @@ export function TeamDrawer({ team }: { team: TeamDetail | null }) {
                       </p>
                       <div className="mt-1 flex items-center gap-2 flex-wrap">
                         {p.license ? (
-                          <p className="text-[10px] text-slate-400">Licence: {p.license}</p>
+                          <p className="text-[10px] text-slate-400">
+                            Licence: {p.license}
+                          </p>
                         ) : null}
                         {m ? (
                           <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-blue-700">
