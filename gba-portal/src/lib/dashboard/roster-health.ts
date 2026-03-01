@@ -20,7 +20,7 @@ export async function getCoachRosterHealth() {
 
   let query = supabase
     .from("players")
-    .select("id, firstname, lastname, team_id");
+    .select("player_uid, license, firstname, lastname, team_id");
 
   if (scope.viewableTeamIds) {
     if (scope.viewableTeamIds.length > 0) {
@@ -38,15 +38,18 @@ export async function getCoachRosterHealth() {
   }
 
   const playerList = (players ?? []) as Array<{
-    id: string;
+    player_uid: string | null;
+    license: string | number | null;
     firstname: string;
     lastname: string;
     team_id: string | null;
   }>;
 
   return {
-    players: playerList.map((p) => ({
-      id: p.id,
+    players: playerList.map((p, idx) => ({
+      id:
+        p.player_uid ??
+        `${String(p.license ?? "no-lic")}-${p.lastname}-${p.firstname}-${idx}`,
       first_name: p.firstname,
       last_name: p.lastname,
       team_id: p.team_id,

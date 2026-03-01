@@ -1,5 +1,6 @@
-import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { getDashboardScope } from "@/lib/dashboard/getDashboardScope";
+import { log } from "@/lib/logger";
 
 // Helper to identify roles with broad access (admin + resps) vs scoped roles (coach)
 function hasGlobalAccess(role: string) {
@@ -14,12 +15,8 @@ type TeamLite = {
 };
 
 export async function getScopedRosterData() {
-  const supabase = await createClient();
-  const admin = createAdminClient();
+  const db = await createClient();
   const scope = await getDashboardScope();
-
-  // Use admin client for global roles to ensure they see everything regardless of strict RLS
-  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
   let teamsQuery = db
     .from("teams")
@@ -66,11 +63,8 @@ export async function getScopedRosterData() {
 }
 
 export async function getScopedPlanningData() {
-  const supabase = await createClient();
-  const admin = createAdminClient();
+  const db = await createClient();
   const scope = await getDashboardScope();
-
-  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
   let sessionsQuery = db.from("planning_sessions").select(
     `
@@ -173,11 +167,8 @@ export async function getScopedPlanningData() {
 }
 
 export async function getDashboardHomeData() {
-  const supabase = await createClient();
-  const admin = createAdminClient();
+  const db = await createClient();
   const scope = await getDashboardScope();
-
-  const db = hasGlobalAccess(scope.role) ? admin : supabase;
 
   let teamsCountQuery = db
     .from("teams")

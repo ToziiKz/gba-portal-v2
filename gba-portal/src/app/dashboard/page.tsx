@@ -2,30 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Calendar,
-  ArrowRight,
-  MapPin,
   Clock,
+  MapPin,
+  ArrowRight,
+  Users,
+  ShieldCheck,
+  UserCircle2,
+  AlertTriangle,
   ChevronRight,
-  AlertCircle,
 } from "lucide-react";
 
 import { getDashboardHomeData } from "@/lib/dashboard/server-data";
 import { getCoachRosterHealth } from "@/lib/dashboard/roster-health";
-import { Card, CardContent } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 export const metadata: Metadata = {
-  title: "Espace GBA · Dashboard",
+  title: "Espace GBA · Vue d’ensemble",
   description:
-    "Tableau de bord opérationnel : priorités terrain, effectif et organisation du club.",
+    "Cockpit opérationnel du club : planning, effectif, équipes et priorités.",
 };
 
 const weekdayOrder = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 export default async function DashboardPage() {
-  const { sessions } = await getDashboardHomeData();
-  const { players: healthPlayers, stats: healthStats } =
-    await getCoachRosterHealth();
+  const { teamCount, playerCount, sessionsCount, sessions } =
+    await getDashboardHomeData();
+  const { players: rosterPlayers } = await getCoachRosterHealth();
 
   const orderedSessions = sessions.slice().sort((a, b) => {
     const ai = weekdayOrder.indexOf(a.day ?? "");
@@ -35,172 +37,207 @@ export default async function DashboardPage() {
   });
 
   const nextSession = orderedSessions[0] ?? null;
+  const teamsWithoutName = orderedSessions.filter((s) => !s.team?.name).length;
 
   return (
-    <div className="space-y-8 pb-10">
-      <section>
-        <Card className="overflow-hidden border-none bg-blue-600 rounded-[2.5rem] shadow-2xl shadow-blue-500/20 relative group">
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 bg-white/5 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000" />
+    <div className="space-y-6 pb-10">
+      <section className="rounded-[2.5rem] border border-blue-100 bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 p-8 text-white shadow-2xl shadow-blue-500/20">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-100/80">
+              Vue d’ensemble
+            </p>
+            <h2 className="mt-2 font-[var(--font-teko)] text-5xl font-black uppercase tracking-tight leading-none">
+              Cockpit du club
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm text-blue-50/90">
+              Suivi visuel des priorités du jour : planning, effectif, équipes
+              et alertes opérationnelles.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/dashboard/effectif-club"
+              className="rounded-xl bg-white px-4 py-2 text-[11px] font-black uppercase tracking-widest text-blue-700 hover:bg-blue-50"
+            >
+              Ouvrir Effectif Club
+            </Link>
+            <Link
+              href="/dashboard/planning"
+              className="rounded-xl border border-white/30 bg-white/10 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-white hover:bg-white/20"
+            >
+              Voir planning
+            </Link>
+          </div>
+        </div>
+      </section>
 
-          <CardContent className="p-0 relative z-10">
-            {nextSession ? (
-              <div className="p-8 md:p-12">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                  <div>
-                    <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-100">
-                      Prochaine séance
-                    </span>
-                    <h3 className="mt-3 text-4xl md:text-6xl font-black text-white uppercase font-[var(--font-teko)] tracking-tight leading-none">
-                      {nextSession.team?.name ?? "Mon Équipe"}
-                    </h3>
-                    <div className="mt-6 flex flex-wrap gap-5 text-blue-50/80">
-                      <div className="flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-wide">
-                        <Calendar className="h-5 w-5 text-blue-200" />
-                        <span>{nextSession.day}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-wide">
-                        <Clock className="h-5 w-5 text-blue-200" />
-                        <span>
-                          {nextSession.start_time} — {nextSession.end_time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm md:text-base font-bold uppercase tracking-wide">
-                        <MapPin className="h-5 w-5 text-blue-200" />
-                        <span>{nextSession.location}</span>
-                      </div>
-                    </div>
-                  </div>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className="rounded-3xl border-slate-100 bg-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Équipes
+              </p>
+              <p className="mt-1 text-3xl font-black text-slate-900">{teamCount}</p>
+            </div>
+            <ShieldCheck className="h-7 w-7 text-blue-600" />
+          </CardContent>
+        </Card>
 
-                  <Link href="/dashboard/planning">
-                    <Button className="rounded-3xl h-14 px-8 font-black uppercase tracking-widest bg-white text-blue-600 hover:bg-blue-50 shadow-xl">
-                      Voir le planning
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <div className="p-12 text-center">
-                <p className="text-blue-100/60 font-black uppercase tracking-[0.2em] italic">
-                  Aucune séance prévue
-                </p>
-                <Link href="/dashboard/planning" className="mt-6 inline-block">
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 rounded-2xl h-12 px-8 font-black uppercase tracking-widest text-xs">
-                    Ouvrir le planning
-                  </Button>
-                </Link>
-              </div>
-            )}
+        <Card className="rounded-3xl border-slate-100 bg-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Joueurs
+              </p>
+              <p className="mt-1 text-3xl font-black text-slate-900">{playerCount}</p>
+            </div>
+            <Users className="h-7 w-7 text-indigo-600" />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-slate-100 bg-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Séances
+              </p>
+              <p className="mt-1 text-3xl font-black text-slate-900">{sessionsCount}</p>
+            </div>
+            <Calendar className="h-7 w-7 text-emerald-600" />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-3xl border-slate-100 bg-white">
+          <CardContent className="p-5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Joueurs scope
+              </p>
+              <p className="mt-1 text-3xl font-black text-slate-900">
+                {rosterPlayers.length}
+              </p>
+            </div>
+            <UserCircle2 className="h-7 w-7 text-amber-600" />
           </CardContent>
         </Card>
       </section>
 
-      <div className="grid gap-8 lg:grid-cols-12">
-        <div className="lg:col-span-7 space-y-6">
-          <div className="flex items-center justify-between px-2">
-            <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
-              Agenda Hebdomadaire
-            </h4>
-            <Link
-              href="/dashboard/planning"
-              className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1"
-            >
-              Tout le planning <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {orderedSessions.slice(0, 6).map((s) => (
-              <Link key={s.id} href="/dashboard/planning" className="group">
-                <Card className="rounded-3xl border-slate-100 bg-white hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300">
-                  <CardContent className="p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                      <div className="flex flex-col items-center justify-center h-14 w-14 rounded-2xl bg-slate-50 border border-slate-100 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
-                        <span className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">
-                          {s.day?.slice(0, 3)}
-                        </span>
-                        <span className="text-sm font-black text-slate-700 uppercase group-hover:text-blue-600 transition-colors">
-                          {s.start_time?.split(":")[0]}h
-                        </span>
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-black text-slate-900 uppercase tracking-wide group-hover:text-blue-600 transition-colors truncate">
-                          {s.team?.name}
-                        </p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {s.location}
-                          </span>
-                          <span className="text-[10px] font-bold text-blue-600/60 uppercase tracking-widest">
-                            {s.start_time} — {s.end_time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-10 w-10 rounded-full border border-slate-100 flex items-center justify-center text-slate-300 group-hover:text-blue-600 group-hover:border-blue-100 transition-all">
-                      <ChevronRight className="h-5 w-5" />
-                    </div>
-                  </CardContent>
-                </Card>
+      <section className="grid gap-6 lg:grid-cols-12">
+        <Card className="lg:col-span-7 rounded-3xl border-slate-100 bg-white">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+                Planning immédiat
+              </CardTitle>
+              <Link
+                href="/dashboard/planning"
+                className="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:underline flex items-center gap-1"
+              >
+                Ouvrir module <ArrowRight className="h-3 w-3" />
               </Link>
-            ))}
-            {orderedSessions.length === 0 && (
-              <div className="p-12 text-center rounded-[2.5rem] border-2 border-dashed border-slate-100">
-                <Calendar className="h-8 w-8 text-slate-200 mx-auto mb-3" />
-                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                  Planning vide
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {nextSession ? (
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/40 p-4">
+                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                  Prochaine séance
                 </p>
+                <p className="mt-1 text-lg font-black uppercase text-slate-900">
+                  {nextSession.team?.name ?? "Équipe"}
+                </p>
+                <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-bold text-slate-600">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="h-4 w-4 text-blue-500" /> {nextSession.day}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-blue-500" /> {nextSession.start_time} — {nextSession.end_time}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="h-4 w-4 text-blue-500" /> {nextSession.location}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs font-black uppercase tracking-widest text-slate-400">
+                Aucune séance planifiée
               </div>
             )}
-          </div>
-        </div>
 
-        <div className="lg:col-span-5 space-y-8">
-          <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden border-t-4 border-t-blue-600">
-            <CardContent className="p-8 space-y-6">
-              <h4 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
-                Effectif suivi
-              </h4>
-              <div className="p-5 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                <p className="text-[10px] uppercase text-slate-500 font-black tracking-widest mb-2">
-                  Joueurs visibles
-                </p>
-                <span className="text-3xl font-black text-slate-900 tracking-tighter">
-                  {healthStats?.total ?? 0}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {healthPlayers.slice(0, 5).map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/dashboard/effectif-club`}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200"
-                  >
-                    <span className="text-xs font-black text-slate-800 uppercase truncate">
-                      {p.last_name} {p.first_name}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-slate-400" />
-                  </Link>
-                ))}
-              </div>
+            <div className="grid gap-2">
+              {orderedSessions.slice(0, 5).map((s) => (
+                <Link
+                  key={s.id}
+                  href="/dashboard/planning"
+                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 hover:border-blue-200 hover:bg-blue-50"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-black uppercase text-slate-800">
+                      {s.team?.name ?? "Équipe"}
+                    </p>
+                    <p className="text-[10px] uppercase tracking-widest text-slate-500">
+                      {s.day} • {s.start_time} — {s.end_time}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-slate-400" />
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="lg:col-span-5 space-y-6">
+          <Card className="rounded-3xl border-slate-100 bg-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+                Alertes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {teamsWithoutName > 0 ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-bold text-amber-800 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  {teamsWithoutName} séance(s) sans équipe correctement liée
+                </div>
+              ) : (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-bold text-emerald-700">
+                  Aucune alerte bloquante détectée.
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <div className="p-8 rounded-[2.5rem] border border-blue-50 bg-blue-50/50 flex items-start gap-4">
-            <div className="h-10 w-10 rounded-2xl bg-white border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-              <AlertCircle className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-1.5">
-                Focus
-              </p>
-              <p className="text-xs text-slate-600 font-medium leading-relaxed italic">
-                Priorité au planning, aux équipes et à la tenue propre de
-                l&apos;effectif.
-              </p>
-            </div>
-          </div>
+          <Card className="rounded-3xl border-slate-100 bg-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">
+                Actions rapides
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              <Link
+                href="/dashboard/acces"
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+              >
+                Gérer accès & rôles
+              </Link>
+              <Link
+                href="/dashboard/effectif-club"
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+              >
+                Ouvrir effectif club
+              </Link>
+              <Link
+                href="/dashboard/planning"
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+              >
+                Piloter planning
+              </Link>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
