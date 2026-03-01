@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardScope } from "@/lib/dashboard/getDashboardScope";
-import { log } from "@/lib/logger";
 
 // Helper to identify roles with broad access (admin + resps) vs scoped roles (coach)
 function hasGlobalAccess(role: string) {

@@ -79,7 +79,9 @@ export default async function DashboardPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Équipes
               </p>
-              <p className="mt-1 text-3xl font-black text-slate-900">{teamCount}</p>
+              <p className="mt-1 text-3xl font-black text-slate-900">
+                {teamCount}
+              </p>
             </div>
             <ShieldCheck className="h-7 w-7 text-blue-600" />
           </CardContent>
@@ -91,7 +93,9 @@ export default async function DashboardPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Joueurs
               </p>
-              <p className="mt-1 text-3xl font-black text-slate-900">{playerCount}</p>
+              <p className="mt-1 text-3xl font-black text-slate-900">
+                {playerCount}
+              </p>
             </div>
             <Users className="h-7 w-7 text-indigo-600" />
           </CardContent>
@@ -103,7 +107,9 @@ export default async function DashboardPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                 Séances
               </p>
-              <p className="mt-1 text-3xl font-black text-slate-900">{sessionsCount}</p>
+              <p className="mt-1 text-3xl font-black text-slate-900">
+                {sessionsCount}
+              </p>
             </div>
             <Calendar className="h-7 w-7 text-emerald-600" />
           </CardContent>
@@ -150,13 +156,16 @@ export default async function DashboardPage() {
                 </p>
                 <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-bold text-slate-600">
                   <span className="inline-flex items-center gap-1">
-                    <Calendar className="h-4 w-4 text-blue-500" /> {nextSession.day}
+                    <Calendar className="h-4 w-4 text-blue-500" />{" "}
+                    {nextSession.day}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="h-4 w-4 text-blue-500" /> {nextSession.start_time} — {nextSession.end_time}
+                    <Clock className="h-4 w-4 text-blue-500" />{" "}
+                    {nextSession.start_time} — {nextSession.end_time}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <MapPin className="h-4 w-4 text-blue-500" /> {nextSession.location}
+                    <MapPin className="h-4 w-4 text-blue-500" />{" "}
+                    {nextSession.location}
                   </span>
                 </div>
               </div>
