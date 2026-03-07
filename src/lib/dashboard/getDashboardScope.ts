@@ -1,0 +1,163 @@
+import { createClient } from "@/lib/supabase/server";
+import type { DashboardRole } from "@/lib/dashboardRole";
+
+export type DashboardScope = {
+  role: DashboardRole;
+  viewableTeamIds: string[] | null;
+  editableTeamIds: string[] | null;
+  assignedTeams: { id: string; name: string; category: string }[];
+  viewablePoles: string[] | null;
+};
+
+type TeamLite = { id: string; name: string; category: string };
+
+async function getCoachTeamsFromPivot(
+  userId: string,
+): Promise<TeamLite[] | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("team_staff")
+    .select("team:team_id(id, name, category)")
+    .eq("profile_id", userId);
+
+  if (error) return null;
+
+  return (data ?? [])
+    .map((row) =>
+      Array.isArray((row as any).team)
+        ? (row as any).team[0]
+        : (row as any).team,
+    )
+    .filter(Boolean)
+    .map((t: any) => ({
+      id: String(t.id),
+      name: String(t.name ?? ""),
+      category: String(t.category ?? ""),
+    }));
+}
+
+async function getCoachTeamsFromLegacyCoachId(
+  userId: string,
+): Promise<TeamLite[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("teams")
+    .select("id, name, category")
+    .eq("coach_id", userId);
+
+  return (data ?? []).map((t) => ({
+    id: String(t.id),
+    name: String(t.name ?? ""),
+    category: String(t.category ?? ""),
+  }));
+}
+
+export async function getDashboardScope(): Promise<DashboardScope> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      role: "coach",
+      viewableTeamIds: [],
+      editableTeamIds: [],
+      assignedTeams: [],
+      viewablePoles: [],
+    };
+  }
+
+  let profile: {
+    role: string | null;
+    is_active: boolean | null;
+    pole_scope?: string | null;
+  } | null = null;
+
+  const { data: profileWithPole, error: profileErr } = await supabase
+    .from("profiles")
+    .select("role, is_active, pole_scope")
+    .eq("id", user.id)
+    .single();
+
+  if (
+    profileErr &&
+    (profileErr.code === "PGRST204" ||
+      profileErr.message?.toLowerCase().includes("pole_scope") ||
+      profileErr.message?.toLowerCase().includes("column"))
+  ) {
+    const { data: profileLegacy } = await supabase
+      .from("profiles")
+      .select("role, is_active")
+      .eq("id", user.id)
+      .single();
+
+    profile = profileLegacy as any;
+  } else {
+    profile = profileWithPole as any;
+  }
+
+  if (!profile || profile.is_active === false) {
+    return {
+      role: "coach",
+      viewableTeamIds: [],
+      editableTeamIds: [],
+      assignedTeams: [],
+      viewablePoles: [],
+    };
+  }
+
+  const rawRole = String(profile.role ?? "").trim();
+  const role: DashboardRole = rawRole === "admin" ? "admin" : "coach";
+  const poleScope = profile.pole_scope
+    ? String(profile.pole_scope).trim()
+    : null;
+
+  if (role === "admin") {
+    return {
+      role,
+      viewableTeamIds: null,
+      editableTeamIds: null,
+      assignedTeams: [],
+      viewablePoles: null,
+    };
+  }
+
+  // Coach scope (M2M first, fallback legacy coach_id)
+  const pivotTeams = await getCoachTeamsFromPivot(user.id);
+  let assignedTeams = pivotTeams ?? [];
+
+  if (!pivotTeams) {
+    assignedTeams = await getCoachTeamsFromLegacyCoachId(user.id);
+  }
+
+  let teamIds = [...new Set(assignedTeams.map((t) => t.id))];
+
+  if (poleScope) {
+    const { data: poleTeams } = await supabase
+      .from("teams")
+      .select("id, name, category")
+      .eq("pole", poleScope);
+
+    if (poleTeams) {
+      const newTeams = poleTeams
+        .map((t) => ({
+          id: String(t.id),
+          name: String(t.name ?? ""),
+          category: String(t.category ?? ""),
+        }))
+        .filter((pt) => !teamIds.includes(pt.id));
+      assignedTeams = [...assignedTeams, ...newTeams];
+      teamIds = [...teamIds, ...newTeams.map((t) => t.id)];
+    }
+  }
+
+  return {
+    role: "coach",
+    viewableTeamIds: teamIds,
+    editableTeamIds: teamIds,
+    assignedTeams,
+    viewablePoles: poleScope ? [poleScope] : [],
+  };
+}
