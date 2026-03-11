@@ -1,0 +1,633 @@
+import { redirect } from "next/navigation";
+
+import { createClient } from "@/lib/supabase/server";
+import { requireRole } from "@/lib/dashboard/authz";
+import {
+  regenerateCoachInvitation,
+  createDirectInvitation,
+  deleteCoachInvitation,
+} from "./actions";
+import { updateUserProfile, deleteUserProfile } from "./update-actions";
+import { DeleteProfileSubmitButton } from "./DeleteProfileSubmitButton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import {
+  UserPlus,
+  Search,
+  ShieldCheck,
+  Mail,
+  Users,
+  CheckCircle2,
+  Save,
+} from "lucide-react";
+import Link from "next/link";
+
+export const metadata = {
+  title: "Accès & Permissions · GBA Dashboard",
+};
+
+type Params = {
+  invite?: string;
+  status?: string;
+  q?: string;
+  ok?: string;
+  err?: string;
+  user?: string;
+};
+
+function toDateLabel(value: string | null) {
+  if (!value) return "—";
+  return value.split("T")[0];
+}
+
+export default async function DashboardCoachAccessPage({
+  searchParams,
+}: {
+  searchParams?: Promise<Params>;
+}) {
+  const params = (await searchParams) ?? {};
+
+  try {
+    await requireRole("admin");
+  } catch (err) {
+    const message = String((err as Error)?.message ?? "");
+    if (message.toLowerCase().includes("not authenticated")) {
+      redirect("/login");
+    }
+    if (message.toLowerCase().includes("suspendu")) {
+      redirect("/login?disabled=1");
+    }
+    redirect("/dashboard");
+  }
+
+  const supabase = await createClient();
+  const statusFilter = params.status ?? "pending";
+
+  // 1. Charger les profils existants
+  const { data: users } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, role, is_active, updated_at")
+    .order("role", { ascending: true })
+    .order("full_name", { ascending: true });
+
+  const existingEmails = new Set(
+    (users ?? []).map((u) => u.email.toLowerCase()),
+  );
+
+  // 2. Invitation-only workflow: coach access requests disabled
+
+  // 3. Invitations : Filtrées par emails déjà présents
+  const { data: rawInvitations } = await supabase
+    .from("coach_invitations")
+    .select("id, email, full_name, role, created_at, expires_at, used_at")
+    .is("used_at", null)
+    .order("created_at", { ascending: false });
+
+  const latestInvitations = (rawInvitations ?? []).filter(
+    (inv) => !existingEmails.has(inv.email.toLowerCase()),
+  );
+
+  const { data: usedInvitations } = await supabase
+    .from("coach_invitations")
+    .select("id, email, full_name, role, created_at, expires_at, used_at")
+    .not("used_at", "is", null)
+    .order("used_at", { ascending: false })
+    .limit(10);
+
+  // 4. Équipes
+  const { data: teams } = await supabase
+    .from("teams")
+    .select("id, name, category, pole")
+    .order("name", { ascending: true });
+
+  // 5. Assignations staff ↔ équipes (M2M)
+  const { data: staffAssignments } = await supabase
+    .from("team_staff")
+    .select("team_id, profile_id, role_in_team, is_primary");
+
+  return (
+    <div className="space-y-8 pb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mb-1">
+            Système
+          </p>
+          <h2 className="font-[var(--font-teko)] text-4xl md:text-5xl font-black uppercase tracking-tight text-slate-900 leading-none">
+            Accès & <span className="text-blue-600">Permissions</span>
+          </h2>
+          <p className="mt-2 text-sm text-slate-600 max-w-md font-medium">
+            Gérez les rôles, validez les membres et configurez les droits
+            d&apos;accès.
+          </p>
+        </div>
+      </div>
+
+      {params.ok === "1" && (
+        <Card className="rounded-3xl border-emerald-100 bg-emerald-50/50 overflow-hidden shadow-sm">
+          <CardContent className="p-4 text-xs font-black uppercase tracking-wider text-emerald-700">
+            Mise à jour enregistrée.
+          </CardContent>
+        </Card>
+      )}
+
+      {params.err && (
+        <Card className="rounded-3xl border-rose-100 bg-rose-50/50 overflow-hidden shadow-sm">
+          <CardContent className="p-4 text-xs font-black uppercase tracking-wider text-rose-700">
+            Erreur : {params.err}
+          </CardContent>
+        </Card>
+      )}
+
+      {params.invite && (
+        <Card className="rounded-3xl border-blue-100 bg-blue-50/50 overflow-hidden shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3 mb-4 text-blue-700">
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="font-black uppercase tracking-widest text-xs">
+                  Lien de sécurité généré
+                </p>
+                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-tighter">
+                  Valable 72 heures • Usage unique
+                </p>
+              </div>
+            </div>
+            <div className="rounded-2xl border border-blue-100 bg-white p-4 font-mono text-xs text-slate-700 break-all mb-4 select-all shadow-inner">
+              {params.invite}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href={`mailto:?subject=${encodeURIComponent("Activation compte GBA")}&body=${encodeURIComponent(`Bonjour,\n\nVoici ton lien d’activation :\n${params.invite}\n\nCe lien expire dans 72h.`)}`}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                Transmettre par Mail
+              </a>
+              <Link href="/dashboard/acces">
+                <Button
+                  variant="ghost"
+                  className="rounded-xl text-slate-400 text-xs font-bold uppercase tracking-widest"
+                >
+                  Fermer
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden border-t-4 border-t-blue-600">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-4 w-4 text-blue-600" />
+                <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                  Nouvel Accès
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <form action={createDirectInvitation} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                    Identité
+                  </label>
+                  <input
+                    name="fullName"
+                    required
+                    placeholder="Nom et Prénom"
+                    className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-blue-200 focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-900"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                    Email Professionnel
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="nom@exemple.com"
+                    className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-blue-200 focus:ring-4 focus:ring-blue-500/5 transition-all text-slate-900"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                    Rôle
+                  </label>
+                  <select
+                    name="role"
+                    className="w-full rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 outline-none appearance-none cursor-pointer"
+                  >
+                    <option value="coach">COACH</option>
+                    <option value="admin">ADMIN</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">
+                    Pré-assigner équipes
+                  </label>
+                  <div className="max-h-32 overflow-y-auto p-2 rounded-2xl border border-slate-100 bg-slate-50 grid grid-cols-1 gap-1">
+                    {(teams ?? []).map((t) => (
+                      <label
+                        key={t.id}
+                        className="flex items-center gap-2 px-2 py-1 hover:bg-white rounded-lg cursor-pointer transition-colors group"
+                      >
+                        <input
+                          type="checkbox"
+                          name="targetTeamIds"
+                          value={t.id}
+                          className="h-3 w-3 accent-blue-600"
+                        />
+                        <span className="text-[9px] font-black text-slate-500 group-hover:text-slate-900 uppercase truncate">
+                          {t.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full rounded-2xl py-7 font-black uppercase tracking-widest text-[10px] bg-[#070A11] hover:bg-blue-600 text-white shadow-xl shadow-slate-900/10 transition-all border-none"
+                >
+                  Générer l&apos;Invitation
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {latestInvitations.length > 0 && (
+            <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                  Invitations actives ({latestInvitations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-50">
+                  {latestInvitations.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="p-4 flex items-center justify-between group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-slate-800 uppercase truncate leading-none mb-1">
+                          {inv.full_name || inv.email}
+                        </p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                          Expire le {toDateLabel(inv.expires_at)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <form action={regenerateCoachInvitation}>
+                          <input
+                            type="hidden"
+                            name="invitationId"
+                            value={inv.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50"
+                          >
+                            Relancer
+                          </Button>
+                        </form>
+                        <form action={deleteCoachInvitation}>
+                          <input
+                            type="hidden"
+                            name="invitationId"
+                            value={inv.id}
+                          />
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            size="sm"
+                            className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50"
+                          >
+                            Supprimer
+                          </Button>
+                        </form>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {usedInvitations && usedInvitations.length > 0 && (
+            <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-black uppercase tracking-[0.3em] text-slate-400">
+                  Invitations utilisées ({usedInvitations.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-slate-50">
+                  {usedInvitations.map((inv) => (
+                    <div
+                      key={inv.id}
+                      className="p-4 flex items-center justify-between group"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-slate-800 uppercase truncate leading-none mb-1">
+                          {inv.full_name || inv.email}
+                        </p>
+                        <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+                          Utilisée le {toDateLabel(inv.used_at)}
+                        </p>
+                      </div>
+                      <form action={deleteCoachInvitation}>
+                        <input
+                          type="hidden"
+                          name="invitationId"
+                          value={inv.id}
+                        />
+                        <Button
+                          type="submit"
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-xl h-8 px-2 text-[9px] font-black uppercase tracking-widest text-rose-600 hover:bg-rose-50"
+                        >
+                          Supprimer
+                        </Button>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="rounded-[2.5rem] border-slate-100 bg-white shadow-sm overflow-hidden">
+            <CardContent className="p-6">
+              <form className="space-y-4" method="get">
+                <div className="relative group">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-blue-500 transition-colors" />
+                  <input
+                    name="q"
+                    defaultValue={params.q ?? ""}
+                    placeholder="Rechercher..."
+                    className="w-full rounded-2xl border border-slate-100 bg-slate-50 pl-11 pr-4 py-3 text-sm font-medium outline-none text-slate-900"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <select
+                    name="status"
+                    defaultValue={statusFilter}
+                    className="flex-1 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 outline-none"
+                  >
+                    <option value="pending">En attente</option>
+                    <option value="all">Tous</option>
+                  </select>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    variant="secondary"
+                    className="rounded-xl px-4 font-black text-slate-900 border-slate-200"
+                  >
+                    OK
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-8 space-y-8">
+          <Card className="rounded-2xl border-slate-100 bg-white/60">
+            <CardContent className="p-4 text-[10px] font-black uppercase tracking-wider text-slate-500">
+              Workflow invitation-only actif : demandes publiques désactivées.
+            </CardContent>
+          </Card>
+
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-400 flex items-center gap-2 px-2">
+              <Users className="h-4 w-4" /> Annuaire Staff ({users?.length})
+            </h3>
+
+            <div className="space-y-6">
+              {users?.map((user) => {
+                const userAssignments = (staffAssignments ?? []).filter(
+                  (a) => a.profile_id === user.id,
+                );
+                const assignmentByTeamId = new Map(
+                  userAssignments.map((a) => [
+                    String(a.team_id),
+                    {
+                      role_in_team: String(a.role_in_team ?? "assistant"),
+                      is_primary: Boolean(a.is_primary),
+                    },
+                  ]),
+                );
+                const assignedTeams = (teams ?? []).filter((t) =>
+                  assignmentByTeamId.has(t.id),
+                );
+                const assignedPrimaryCount = userAssignments.filter((a) =>
+                  Boolean(a.is_primary),
+                ).length;
+                const assignedCoachCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "coach",
+                ).length;
+                const assignedAssistantCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "assistant",
+                ).length;
+                const assignedStaffCount = userAssignments.filter(
+                  (a) => String(a.role_in_team) === "staff",
+                ).length;
+                const isActive = user.is_active !== false;
+                const wasJustUpdated =
+                  params.ok === "1" && params.user === user.id;
+
+                return (
+                  <Card
+                    key={user.id}
+                    className="rounded-[2rem] border-slate-100 bg-white shadow-sm overflow-hidden hover:border-blue-100 transition-all"
+                  >
+                    <CardContent className="p-0">
+                      <div className="p-6 space-y-6">
+                        <form action={updateUserProfile}>
+                          <input type="hidden" name="userId" value={user.id} />
+
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div className="flex items-center gap-4">
+                              <div className="relative">
+                                <div
+                                  className={`h-12 w-12 rounded-2xl flex items-center justify-center font-black text-xs uppercase ${user.role === "admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}
+                                >
+                                  {user.full_name?.slice(0, 2)}
+                                </div>
+                                <div
+                                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${isActive ? "bg-emerald-500" : "bg-slate-300"}`}
+                                />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-black text-slate-900 uppercase tracking-widest leading-none text-base truncate">
+                                  {user.full_name || "Sans Nom"}
+                                </p>
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 truncate">
+                                  {user.email}
+                                </p>
+                                {wasJustUpdated && (
+                                  <p className="mt-1 text-[9px] font-black uppercase tracking-widest text-emerald-600">
+                                    Dernière sauvegarde réussie
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                              <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl">
+                                <span className="text-[9px] font-black uppercase text-slate-400">
+                                  Rôle:
+                                </span>
+                                <select
+                                  name="role"
+                                  defaultValue={user.role ?? "coach"}
+                                  className="bg-transparent text-[10px] font-black uppercase text-slate-900 outline-none cursor-pointer"
+                                >
+                                  <option value="admin">Admin</option>
+                                  <option value="coach">Coach</option>
+                                </select>
+                              </div>
+
+                              <label className="flex items-center gap-2 bg-slate-50 border border-slate-100 px-3 py-2 rounded-xl cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  name="isActive"
+                                  defaultChecked={isActive}
+                                  className="h-3.5 w-3.5 accent-emerald-500"
+                                />
+                                <span className="text-[9px] font-black uppercase text-slate-900">
+                                  Actif
+                                </span>
+                              </label>
+
+                              <Button
+                                type="submit"
+                                size="sm"
+                                className="rounded-xl bg-[#070A11] hover:bg-blue-600 text-white text-[9px] font-black uppercase tracking-widest h-10 px-4 border-none"
+                              >
+                                <Save className="mr-2 h-3.5 w-3.5 text-white" />{" "}
+                                Enregistrer
+                              </Button>
+                            </div>
+                          </div>
+
+                          {user.role === "coach" && (
+                            <div className="bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
+                              <div className="p-4 border-b border-slate-100 bg-white/50 space-y-2">
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">
+                                  Équipes assignées ({assignedTeams.length})
+                                </p>
+                                <div className="flex flex-wrap gap-2">
+                                  <span className="rounded-lg bg-slate-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-slate-600">
+                                    Principal: {assignedPrimaryCount}
+                                  </span>
+                                  <span className="rounded-lg bg-blue-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-blue-700">
+                                    Coach: {assignedCoachCount}
+                                  </span>
+                                  <span className="rounded-lg bg-indigo-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-indigo-700">
+                                    Assistant: {assignedAssistantCount}
+                                  </span>
+                                  <span className="rounded-lg bg-amber-100 px-2 py-1 text-[9px] font-black uppercase tracking-wider text-amber-700">
+                                    Staff: {assignedStaffCount}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="p-2 max-h-72 overflow-y-auto space-y-2">
+                                {(teams ?? []).map((team) => {
+                                  const assigned = assignmentByTeamId.has(
+                                    team.id,
+                                  );
+                                  const assignment = assignmentByTeamId.get(
+                                    team.id,
+                                  );
+                                  const roleInTeam =
+                                    assignment?.role_in_team ?? "assistant";
+                                  const isPrimary =
+                                    assignment?.is_primary ?? false;
+
+                                  return (
+                                    <div
+                                      key={team.id}
+                                      className="rounded-lg border border-slate-200 bg-white p-2"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          name={`assign_${team.id}`}
+                                          defaultChecked={assigned}
+                                          className="h-3.5 w-3.5 accent-blue-600"
+                                        />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 truncate">
+                                          {team.name}
+                                        </span>
+                                        {assigned && (
+                                          <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-blue-600" />
+                                        )}
+                                      </div>
+
+                                      <div className="mt-2 grid grid-cols-2 gap-2 pl-6">
+                                        <select
+                                          name={`role_${team.id}`}
+                                          defaultValue={roleInTeam}
+                                          className="h-8 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black uppercase tracking-wide text-slate-700"
+                                        >
+                                          <option value="coach">Coach</option>
+                                          <option value="assistant">
+                                            Assistant
+                                          </option>
+                                          <option value="staff">Staff</option>
+                                        </select>
+
+                                        <label className="flex items-center gap-2 h-8 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black uppercase tracking-wide text-slate-700">
+                                          <input
+                                            type="checkbox"
+                                            name={`primary_${team.id}`}
+                                            defaultChecked={isPrimary}
+                                            className="h-3.5 w-3.5 accent-emerald-600"
+                                          />
+                                          Principal
+                                        </label>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </form>
+
+                        <div className="pt-6 border-t border-slate-50 flex justify-between items-center">
+                          <p className="text-[9px] font-bold text-slate-300 uppercase italic px-2">
+                            ID: {user.id.slice(0, 12)}...
+                          </p>
+                          <form action={deleteUserProfile}>
+                            <input
+                              type="hidden"
+                              name="userId"
+                              value={user.id}
+                            />
+                            <DeleteProfileSubmitButton />
+                          </form>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
