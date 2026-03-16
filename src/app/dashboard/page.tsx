@@ -243,6 +243,12 @@ export default async function DashboardPage() {
               >
                 Piloter planning
               </Link>
+              <Link
+                href="/dashboard/composition"
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black uppercase tracking-widest text-slate-700 hover:border-blue-200 hover:bg-blue-50"
+              >
+                Préparer composition
+              </Link>
             </CardContent>
           </Card>
         </div>

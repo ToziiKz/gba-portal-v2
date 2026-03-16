@@ -10,6 +10,7 @@ import {
   Calendar,
   ShieldCheck,
   ChevronRight,
+  ClipboardList,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +26,7 @@ const iconMap: Record<string, LucideIcon> = {
   "/dashboard/effectif-club": Users,
   "/dashboard/effectif": Users,
   "/dashboard/planning": Calendar,
+  "/dashboard/composition": ClipboardList,
   "/dashboard/acces": ShieldCheck,
   "/dashboard/joueurs": Users,
 };

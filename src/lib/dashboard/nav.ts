@@ -40,6 +40,13 @@ export const navItems: NavItem[] = [
     minRole: "coach",
   },
   {
+    label: "Composition",
+    href: "/dashboard/composition",
+    status: "ready",
+    note: "terrain interactif",
+    minRole: "coach",
+  },
+  {
     label: "Accès & Rôles",
     href: "/dashboard/acces",
     status: "ready",
